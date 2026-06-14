@@ -63,6 +63,76 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
     }
 }
 
+public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ICurrentUserService _currentUser;
+
+    public ChangePasswordCommandHandler(IIdentityService identityService, ICurrentUserService currentUser)
+    {
+        _identityService = identityService;
+        _currentUser = currentUser;
+    }
+
+    public async Task<Result> Handle(ChangePasswordCommand request, CancellationToken ct)
+    {
+        var userId = _currentUser.UserId;
+        if (string.IsNullOrEmpty(userId)) return Result.Failure("Not authenticated", 401);
+
+        var (success, error) = await _identityService.ChangePasswordAsync(
+            userId, request.CurrentPassword, request.NewPassword);
+        return success ? Result.Success() : Result.Failure(error ?? "Failed to change password");
+    }
+}
+
+public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+
+    public ForgotPasswordCommandHandler(IIdentityService identityService) => _identityService = identityService;
+
+    public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken ct)
+    {
+        var (success, error) = await _identityService.ForgotPasswordAsync(request.Email);
+        return Result.Success();
+    }
+}
+
+public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+
+    public ResetPasswordCommandHandler(IIdentityService identityService) => _identityService = identityService;
+
+    public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken ct)
+    {
+        var (success, error) = await _identityService.ResetPasswordAsync(
+            request.Email, request.Token, request.NewPassword);
+        return success ? Result.Success() : Result.Failure(error ?? "Failed to reset password");
+    }
+}
+
+public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
+{
+    private readonly IIdentityService _identityService;
+    private readonly ICurrentUserService _currentUser;
+
+    public LogoutCommandHandler(IIdentityService identityService, ICurrentUserService currentUser)
+    {
+        _identityService = identityService;
+        _currentUser = currentUser;
+    }
+
+    public async Task<Result> Handle(LogoutCommand request, CancellationToken ct)
+    {
+        var userId = _currentUser.UserId;
+        if (string.IsNullOrEmpty(userId)) return Result.Failure("Not authenticated", 401);
+
+        var (success, error) = await _identityService.RevokeRefreshTokenAsync(userId);
+        return success ? Result.Success() : Result.Failure(error ?? "Failed to logout");
+    }
+}
+
 public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
 {
     private readonly IIdentityService _identityService;
