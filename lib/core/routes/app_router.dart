@@ -7,12 +7,14 @@ import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/verify_otp_screen.dart';
+import '../../features/cart/presentation/screens/cart_screen.dart';
+import '../../features/checkout/presentation/screens/checkout_screen.dart';
+import '../../features/checkout/presentation/screens/order_confirmation_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/offers/presentation/screens/offer_details_screen.dart';
-import '../../features/stores/presentation/screens/map_screen.dart';
-import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/stores/presentation/screens/map_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -65,6 +67,16 @@ class AppRouter {
         path: RouteNames.search,
         name: 'search',
         builder: (context, state) => const _PlaceholderScreen(title: 'Search'),
+      ),
+      GoRoute(
+        path: RouteNames.checkout,
+        name: 'checkout',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.orderConfirmation,
+        name: 'order-confirmation',
+        builder: (context, state) => const OrderConfirmationScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
