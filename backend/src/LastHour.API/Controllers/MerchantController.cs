@@ -1,3 +1,5 @@
+using LastHour.Application.Features.Offers.DTOs;
+using LastHour.Application.Features.Merchant.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,24 +18,31 @@ public class MerchantController : ControllerBase
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboard()
     {
-        return Ok(new { message = "Merchant dashboard - handler implementation pending" });
+        var result = await _mediator.Send(new GetMerchantDashboardQuery());
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
     [HttpGet("reports")]
     public async Task<IActionResult> GetReports()
     {
-        return Ok(new { message = "Merchant reports - handler implementation pending" });
+        var result = await _mediator.Send(new GetMerchantReportsQuery());
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
     [HttpGet("offers")]
-    public async Task<IActionResult> GetMyOffers()
+    public async Task<IActionResult> GetMyOffers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        return Ok(new { message = "My offers - handler implementation pending" });
+        var result = await _mediator.Send(new GetMyOffersQuery(page, pageSize));
+        return Ok(result);
     }
 
     [HttpPost("offers")]
-    public async Task<IActionResult> CreateOffer()
+    public async Task<IActionResult> CreateOffer([FromBody] CreateOfferRequest request)
     {
-        return Ok(new { message = "Create offer - handler implementation pending" });
+        var result = await _mediator.Send(new CreateMerchantOfferCommand(
+            request.Title, request.Description, request.Category,
+            request.OriginalPrice, request.DiscountPrice, request.Quantity,
+            request.PickupStart, request.PickupEnd));
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 }
