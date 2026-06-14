@@ -11,6 +11,10 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/checkout/presentation/screens/checkout_screen.dart';
 import '../../features/checkout/presentation/screens/order_confirmation_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_dashboard_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_login_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_offers_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_orders_screen.dart';
 import '../../features/offers/presentation/screens/offer_details_screen.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -77,6 +81,26 @@ class AppRouter {
         path: RouteNames.orderConfirmation,
         name: 'order-confirmation',
         builder: (context, state) => const OrderConfirmationScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.merchantLogin,
+        name: 'merchant-login',
+        builder: (context, state) => const MerchantLoginScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.merchantDashboard,
+        name: 'merchant-dashboard',
+        builder: (context, state) => const MerchantDashboardScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.merchantOffers,
+        name: 'merchant-offers',
+        builder: (context, state) => const MerchantOffersScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.merchantOrders,
+        name: 'merchant-orders',
+        builder: (context, state) => const MerchantOrdersScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
