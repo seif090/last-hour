@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LastHour.API/LastHour.API.csproj" />
+    <Project Path="src/LastHour.Application/LastHour.Application.csproj" />
+    <Project Path="src/LastHour.Domain/LastHour.Domain.csproj" />
+    <Project Path="src/LastHour.Infrastructure/LastHour.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LastHour.Application.Tests/LastHour.Application.Tests.csproj" />
+    <Project Path="tests/LastHour.Domain.Tests/LastHour.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
