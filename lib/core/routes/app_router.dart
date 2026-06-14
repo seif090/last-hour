@@ -7,6 +7,12 @@ import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/verify_otp_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/offers/presentation/screens/offer_details_screen.dart';
+import '../../features/stores/presentation/screens/map_screen.dart';
+import '../../features/cart/presentation/screens/cart_screen.dart';
+import '../../features/orders/presentation/screens/orders_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -51,10 +57,14 @@ class AppRouter {
         builder: (context, state) => const VerifyOtpScreen(),
       ),
       GoRoute(
-        path: RouteNames.resetPassword,
-        name: 'reset-password',
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Reset Password'),
+        path: RouteNames.offerDetails,
+        name: 'offer-details',
+        builder: (context, state) => const OfferDetailsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.search,
+        name: 'search',
+        builder: (context, state) => const _PlaceholderScreen(title: 'Search'),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -66,8 +76,7 @@ class AppRouter {
               GoRoute(
                 path: '/main/home',
                 name: 'home',
-                builder: (context, state) =>
-                    const _PlaceholderScreen(title: 'Home'),
+                builder: (context, state) => const HomeScreen(),
               ),
             ],
           ),
@@ -76,8 +85,7 @@ class AppRouter {
               GoRoute(
                 path: '/main/map',
                 name: 'map',
-                builder: (context, state) =>
-                    const _PlaceholderScreen(title: 'Map'),
+                builder: (context, state) => const MapScreen(),
               ),
             ],
           ),
@@ -86,8 +94,7 @@ class AppRouter {
               GoRoute(
                 path: '/main/cart',
                 name: 'cartTab',
-                builder: (context, state) =>
-                    const _PlaceholderScreen(title: 'Cart'),
+                builder: (context, state) => const CartScreen(),
               ),
             ],
           ),
@@ -96,8 +103,7 @@ class AppRouter {
               GoRoute(
                 path: '/main/orders',
                 name: 'ordersTab',
-                builder: (context, state) =>
-                    const _PlaceholderScreen(title: 'Orders'),
+                builder: (context, state) => const OrdersScreen(),
               ),
             ],
           ),
@@ -106,8 +112,7 @@ class AppRouter {
               GoRoute(
                 path: '/main/profile',
                 name: 'profileTab',
-                builder: (context, state) =>
-                    const _PlaceholderScreen(title: 'Profile'),
+                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),
@@ -126,33 +131,33 @@ class _MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => navigationShell.goBranch(index),
-        items: const [
-          BottomNavigationBarItem(
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: navigationShell.currentIndex,
+        onDestinationSelected: (index) => navigationShell.goBranch(index),
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            selectedIcon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.map_outlined),
-            activeIcon: Icon(Icons.map),
+            selectedIcon: Icon(Icons.map_rounded),
             label: 'Map',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.shopping_cart_outlined),
-            activeIcon: Icon(Icons.shopping_cart),
+            selectedIcon: Icon(Icons.shopping_cart_rounded),
             label: 'Cart',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
-            activeIcon: Icon(Icons.receipt_long),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
             label: 'Orders',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
+            selectedIcon: Icon(Icons.person_rounded),
             label: 'Profile',
           ),
         ],

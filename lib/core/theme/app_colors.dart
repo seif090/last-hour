@@ -4,6 +4,8 @@ import '../constants/color_constants.dart';
 class AppColors {
   AppColors._();
 
+  static Gradient get primaryGradient => ColorConstants.primaryGradient;
+
   static const Color primary = ColorConstants.primary;
   static const Color primaryLight = ColorConstants.primaryLight;
   static const Color primaryDark = ColorConstants.primaryDark;
