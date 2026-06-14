@@ -11,10 +11,14 @@ import '../../features/cart/presentation/screens/cart_screen.dart';
 import '../../features/checkout/presentation/screens/checkout_screen.dart';
 import '../../features/checkout/presentation/screens/order_confirmation_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_create_offer_screen.dart';
 import '../../features/merchant/presentation/screens/merchant_dashboard_screen.dart';
 import '../../features/merchant/presentation/screens/merchant_login_screen.dart';
 import '../../features/merchant/presentation/screens/merchant_offers_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_order_details_screen.dart';
 import '../../features/merchant/presentation/screens/merchant_orders_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_reports_screen.dart';
+import '../../features/merchant/presentation/screens/merchant_shell.dart';
 import '../../features/offers/presentation/screens/offer_details_screen.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -88,19 +92,66 @@ class AppRouter {
         builder: (context, state) => const MerchantLoginScreen(),
       ),
       GoRoute(
-        path: RouteNames.merchantDashboard,
-        name: 'merchant-dashboard',
-        builder: (context, state) => const MerchantDashboardScreen(),
+        path: RouteNames.merchantCreateOffer,
+        name: 'merchant-create-offer',
+        builder: (context, state) => const MerchantCreateOfferScreen(),
       ),
       GoRoute(
-        path: RouteNames.merchantOffers,
-        name: 'merchant-offers',
-        builder: (context, state) => const MerchantOffersScreen(),
+        path: RouteNames.merchantOrderDetails,
+        name: 'merchant-order-details',
+        builder: (context, state) => const MerchantOrderDetailsScreen(),
       ),
-      GoRoute(
-        path: RouteNames.merchantOrders,
-        name: 'merchant-orders',
-        builder: (context, state) => const MerchantOrdersScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MerchantShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/merchant/dashboard',
+                name: 'merchant-dashboard',
+                builder: (context, state) => const MerchantDashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/merchant/offers',
+                name: 'merchant-offers',
+                builder: (context, state) => const MerchantOffersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/merchant/orders',
+                name: 'merchant-orders',
+                builder: (context, state) => const MerchantOrdersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/merchant/reports',
+                name: 'merchant-reports',
+                builder: (context, state) => const MerchantReportsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/merchant/profile',
+                name: 'merchant-profile',
+                builder: (context, state) => const _PlaceholderScreen(title: 'Merchant Profile'),
+              ),
+            ],
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
