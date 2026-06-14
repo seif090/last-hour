@@ -1,5 +1,6 @@
 using LastHour.Application.Features.Cart.Commands;
 using LastHour.Application.Features.Cart.DTOs;
+using LastHour.Application.Features.Cart.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,17 +16,25 @@ public class CartController : ControllerBase
 
     public CartController(IMediator mediator) => _mediator = mediator;
 
-    [HttpPost("add")]
+    [HttpGet]
+    public async Task<IActionResult> GetCart()
+    {
+        var result = await _mediator.Send(new GetCartQuery());
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost]
     public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
     {
         var result = await _mediator.Send(new AddToCartCommand(request.OfferId, request.Quantity));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
-    [HttpPut("update")]
-    public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemRequest request)
+    [HttpPut("{cartItemId}")]
+    public async Task<IActionResult> UpdateCartItem(string cartItemId, [FromBody] Dictionary<string, object?> body)
     {
-        var result = await _mediator.Send(new UpdateCartItemCommand(request.CartItemId, request.Quantity));
+        var quantity = Convert.ToInt32(body.GetValueOrDefault("quantity") ?? 1);
+        var result = await _mediator.Send(new UpdateCartItemCommand(cartItemId, quantity));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
@@ -43,8 +52,8 @@ public class CartController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("apply-coupon")]
-    public async Task<IActionResult> ApplyCoupon([FromBody] ApplyCouponRequest request)
+    [HttpPost("validate-coupon")]
+    public async Task<IActionResult> ValidateCoupon([FromBody] ApplyCouponRequest request)
     {
         var result = await _mediator.Send(new ApplyCouponCommand(request.Code));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);

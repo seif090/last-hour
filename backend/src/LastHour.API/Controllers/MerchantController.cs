@@ -1,5 +1,5 @@
-using LastHour.Application.Features.Offers.DTOs;
 using LastHour.Application.Features.Merchant.Queries;
+using LastHour.Application.Features.Offers.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +30,7 @@ public class MerchantController : ControllerBase
     }
 
     [HttpGet("offers")]
-    public async Task<IActionResult> GetMyOffers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetMyOffers([FromQuery] int page = 1, [FromQuery(Name = "per_page")] int pageSize = 20)
     {
         var result = await _mediator.Send(new GetMyOffersQuery(page, pageSize));
         return Ok(result);
@@ -43,6 +43,37 @@ public class MerchantController : ControllerBase
             request.Title, request.Description, request.Category,
             request.OriginalPrice, request.DiscountPrice, request.Quantity,
             request.PickupStart, request.PickupEnd));
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPut("offers/{offerId}")]
+    public async Task<IActionResult> UpdateOffer(string offerId, [FromBody] UpdateOfferRequest request)
+    {
+        var result = await _mediator.Send(new UpdateMerchantOfferCommand(
+            offerId, request.Title, request.Description,
+            request.OriginalPrice, request.DiscountPrice, request.Quantity));
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPatch("offers/{offerId}")]
+    public async Task<IActionResult> ToggleOfferActive(string offerId)
+    {
+        var result = await _mediator.Send(new ToggleMerchantOfferActiveCommand(offerId));
+        return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpGet("orders")]
+    public async Task<IActionResult> GetOrders([FromQuery] int page = 1, [FromQuery(Name = "per_page")] int pageSize = 20)
+    {
+        var result = await _mediator.Send(new GetMerchantOrdersQuery(page, pageSize));
+        return Ok(result);
+    }
+
+    [HttpPatch("orders/{orderId}")]
+    public async Task<IActionResult> UpdateOrderStatus(string orderId, [FromBody] Dictionary<string, string?> body)
+    {
+        var status = body.GetValueOrDefault("status") ?? "confirmed";
+        var result = await _mediator.Send(new UpdateMerchantOrderCommand(orderId, status));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 }

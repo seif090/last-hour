@@ -2,6 +2,7 @@ using LastHour.Application.Common.Interfaces;
 using LastHour.Application.Common.Models;
 using LastHour.Application.Features.Auth.DTOs;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace LastHour.Application.Features.Auth.Commands;
@@ -9,8 +10,13 @@ namespace LastHour.Application.Features.Auth.Commands;
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<AuthResponse>>
 {
     private readonly IIdentityService _identityService;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public RegisterCommandHandler(IIdentityService identityService) => _identityService = identityService;
+    public RegisterCommandHandler(IIdentityService identityService, IUnitOfWork unitOfWork)
+    {
+        _identityService = identityService;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<Result<AuthResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
@@ -29,17 +35,28 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(accessToken);
 
+        var profile = await _unitOfWork.UserProfiles.GetAll()
+            .FirstOrDefaultAsync(p => p.IdentityId == user.Id, cancellationToken);
+
         return Result<AuthResponse>.Success(new AuthResponse(
             user.Id, user.FullName, user.Email, user.Phone, user.AvatarUrl,
-            request.Role, accessToken, refreshToken, jwt.ValidTo));
+            request.Role, accessToken, refreshToken, jwt.ValidTo,
+            profile?.IsEmailVerified == true ? DateTime.UtcNow.ToString("o") : null,
+            profile?.IsPhoneVerified == true ? DateTime.UtcNow.ToString("o") : null,
+            profile?.CreatedAt.ToString("o")));
     }
 }
 
 public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResponse>>
 {
     private readonly IIdentityService _identityService;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public LoginCommandHandler(IIdentityService identityService) => _identityService = identityService;
+    public LoginCommandHandler(IIdentityService identityService, IUnitOfWork unitOfWork)
+    {
+        _identityService = identityService;
+        _unitOfWork = unitOfWork;
+    }
 
     public async Task<Result<AuthResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
@@ -57,9 +74,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(accessToken);
 
+        var profile = await _unitOfWork.UserProfiles.GetAll()
+            .FirstOrDefaultAsync(p => p.IdentityId == user.Id, cancellationToken);
+
         return Result<AuthResponse>.Success(new AuthResponse(
             user.Id, user.FullName, user.Email, user.Phone, user.AvatarUrl,
-            role, accessToken, refreshToken, jwt.ValidTo));
+            role, accessToken, refreshToken, jwt.ValidTo,
+            profile?.IsEmailVerified == true ? DateTime.UtcNow.ToString("o") : null,
+            profile?.IsPhoneVerified == true ? DateTime.UtcNow.ToString("o") : null,
+            profile?.CreatedAt.ToString("o")));
     }
 }
 
@@ -133,30 +156,27 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
     }
 }
 
-public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<AuthResponse>>
+public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Result<RefreshResponse>>
 {
     private readonly IIdentityService _identityService;
 
-    public RefreshTokenCommandHandler(IIdentityService identityService) => _identityService = identityService;
-
-    public async Task<Result<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+    public RefreshTokenCommandHandler(IIdentityService identityService)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwt = handler.ReadJwtToken(request.AccessToken);
-        var jti = jwt.Claims.First(c => c.Type == "jti").Value;
+        _identityService = identityService;
+    }
 
+    public async Task<Result<RefreshResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+    {
         var (success, error, accessToken, refreshToken) =
-            await _identityService.RefreshTokenAsync(request.RefreshToken, jti);
+            await _identityService.RefreshTokenAsync(request.RefreshToken);
 
         if (!success || accessToken is null || refreshToken is null)
-            return Result<AuthResponse>.Failure(error ?? "Token refresh failed", 401);
+            return Result<RefreshResponse>.Failure(error ?? "Token refresh failed", 401);
 
+        var handler = new JwtSecurityTokenHandler();
         var newJwt = handler.ReadJwtToken(accessToken);
-        var userId = newJwt.Claims.First(c => c.Type == "nameid" || c.Type == "sub").Value;
-        var email = newJwt.Claims.First(c => c.Type == "email").Value;
-        var role = newJwt.Claims.First(c => c.Type == "role").Value;
 
-        return Result<AuthResponse>.Success(new AuthResponse(
-            userId, "", email, null, null, role, accessToken, refreshToken, newJwt.ValidTo));
+        return Result<RefreshResponse>.Success(new RefreshResponse(
+            accessToken, refreshToken, newJwt.ValidTo));
     }
 }

@@ -167,20 +167,13 @@ public class IdentityService : IIdentityService
     }
 
     public async Task<(bool Success, string? Error, string? AccessToken, string? RefreshToken)> RefreshTokenAsync(
-        string refreshToken, string jwtId)
+        string refreshToken)
     {
         var storedToken = await _context.RefreshTokens
             .FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsUsed && !rt.IsRevoked);
 
         if (storedToken == null)
             return (false, "Invalid refresh token", null, null);
-
-        if (storedToken.JwtId != jwtId)
-        {
-            storedToken.IsRevoked = true;
-            await _context.SaveChangesAsync();
-            return (false, "Token mismatch - possible theft", null, null);
-        }
 
         if (storedToken.ExpiryDate < DateTime.UtcNow)
         {

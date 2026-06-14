@@ -11,13 +11,15 @@ public record GetOffersByCategoryQuery(string Category, int Page = 1, int PageSi
 public record GetNearbyOffersQuery(double Latitude, double Longitude, double RadiusKm = 5) : IRequest<Result<List<OfferResponse>>>;
 public record GetOfferDetailsQuery(string OfferId) : IRequest<Result<OfferResponse>>;
 public record SearchOffersQuery(string SearchTerm, int Page = 1, int PageSize = 20) : IRequest<Result<PaginatedList<OfferResponse>>>;
+public record GetOffersQuery(int Page = 1, int PageSize = 20) : IRequest<Result<PaginatedList<OfferResponse>>>;
 
 public class OfferQueryHandlers :
     IRequestHandler<GetFeaturedOffersQuery, Result<PaginatedList<OfferResponse>>>,
     IRequestHandler<GetOffersByCategoryQuery, Result<PaginatedList<OfferResponse>>>,
     IRequestHandler<GetNearbyOffersQuery, Result<List<OfferResponse>>>,
     IRequestHandler<GetOfferDetailsQuery, Result<OfferResponse>>,
-    IRequestHandler<SearchOffersQuery, Result<PaginatedList<OfferResponse>>>
+    IRequestHandler<SearchOffersQuery, Result<PaginatedList<OfferResponse>>>,
+    IRequestHandler<GetOffersQuery, Result<PaginatedList<OfferResponse>>>
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -90,6 +92,22 @@ public class OfferQueryHandlers :
         return offer is null
             ? Result<OfferResponse>.Failure("Offer not found", 404)
             : Result<OfferResponse>.Success(MapToResponse(offer));
+    }
+
+    public async Task<Result<PaginatedList<OfferResponse>>> Handle(
+        GetOffersQuery request, CancellationToken ct)
+    {
+        var query = _unitOfWork.Offers.GetAll()
+            .Include(o => o.Store)
+            .Where(o => o.IsActive && !o.IsExpired && !o.IsSoldOut)
+            .OrderByDescending(o => o.CreatedAt);
+
+        var total = await query.CountAsync(ct);
+        var items = await query.Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize).ToListAsync(ct);
+
+        return Result<PaginatedList<OfferResponse>>.Success(
+            new PaginatedList<OfferResponse>(items.Select(MapToResponse).ToList(), total, request.Page, request.PageSize));
     }
 
     public async Task<Result<PaginatedList<OfferResponse>>> Handle(

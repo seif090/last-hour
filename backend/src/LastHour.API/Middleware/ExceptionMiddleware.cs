@@ -38,18 +38,26 @@ public class ExceptionMiddleware
             _ => (int)HttpStatusCode.InternalServerError
         };
 
+        var message = exception switch
+        {
+            NotFoundException or DomainException or BusinessRuleException => exception.Message,
+            _ => "An internal server error occurred"
+        };
+
         var response = new
         {
-            error = exception switch
-            {
-                NotFoundException or DomainException or BusinessRuleException => exception.Message,
-                _ => "An internal server error occurred"
-            },
-            statusCode
+            success = false,
+            message,
+            data = (object?)null,
+            meta = (object?)null,
+            errors = new[] { message }
         };
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = statusCode;
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        }));
     }
 }

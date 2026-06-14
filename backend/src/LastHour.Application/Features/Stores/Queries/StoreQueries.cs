@@ -1,6 +1,7 @@
 using LastHour.Application.Common.Interfaces;
 using LastHour.Application.Common.Models;
 using LastHour.Application.Features.Stores.DTOs;
+using LastHour.Domain.Entities;
 using LastHour.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,16 @@ public record GetNearbyStoresQuery(double Latitude, double Longitude, double Rad
     : IRequest<Result<List<StoreResponse>>>;
 
 public record GetStoreDetailsQuery(string StoreId) : IRequest<Result<StoreResponse>>;
+public record GetStoresQuery(int Page = 1, int PageSize = 20) : IRequest<Result<PaginatedList<StoreResponse>>>;
+public record GetCategoriesQuery : IRequest<Result<List<Category>>>;
+public record GetStoreOffersQuery(string StoreId, int Page = 1, int PageSize = 20) : IRequest<Result<PaginatedList<Domain.Entities.Offer>>>;
 
 public class StoreQueryHandlers :
     IRequestHandler<GetNearbyStoresQuery, Result<List<StoreResponse>>>,
-    IRequestHandler<GetStoreDetailsQuery, Result<StoreResponse>>
+    IRequestHandler<GetStoreDetailsQuery, Result<StoreResponse>>,
+    IRequestHandler<GetStoresQuery, Result<PaginatedList<StoreResponse>>>,
+    IRequestHandler<GetCategoriesQuery, Result<List<Category>>>,
+    IRequestHandler<GetStoreOffersQuery, Result<PaginatedList<Domain.Entities.Offer>>>
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -54,6 +61,44 @@ public class StoreQueryHandlers :
             return Result<StoreResponse>.Failure("Store not found", 404);
 
         return Result<StoreResponse>.Success(MapToResponse(store, 0));
+    }
+
+    public async Task<Result<PaginatedList<StoreResponse>>> Handle(GetStoresQuery request, CancellationToken ct)
+    {
+        var query = _unitOfWork.Stores.GetAll()
+            .Where(s => s.IsActive)
+            .OrderByDescending(s => s.Rating);
+
+        var total = await query.CountAsync(ct);
+        var items = await query.Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize).ToListAsync(ct);
+
+        var mapped = items.Select(s => MapToResponse(s, 0)).ToList();
+        return Result<PaginatedList<StoreResponse>>.Success(
+            new PaginatedList<StoreResponse>(mapped, total, request.Page, request.PageSize));
+    }
+
+    public async Task<Result<List<Category>>> Handle(GetCategoriesQuery request, CancellationToken ct)
+    {
+        var categories = await _unitOfWork.Categories.GetAll()
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.DisplayOrder)
+            .ToListAsync(ct);
+        return Result<List<Category>>.Success(categories);
+    }
+
+    public async Task<Result<PaginatedList<Domain.Entities.Offer>>> Handle(GetStoreOffersQuery request, CancellationToken ct)
+    {
+        var query = _unitOfWork.Offers.GetAll()
+            .Where(o => o.StoreId == request.StoreId && o.IsActive && !o.IsExpired)
+            .OrderByDescending(o => o.CreatedAt);
+
+        var total = await query.CountAsync(ct);
+        var items = await query.Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize).ToListAsync(ct);
+
+        return Result<PaginatedList<Domain.Entities.Offer>>.Success(
+            new PaginatedList<Domain.Entities.Offer>(items, total, request.Page, request.PageSize));
     }
 
     private static StoreResponse MapToResponse(Domain.Entities.Store s, double distance) => new(

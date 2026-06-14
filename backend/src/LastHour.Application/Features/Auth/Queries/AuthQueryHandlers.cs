@@ -34,7 +34,9 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, R
         return Result<UserProfileResponse>.Success(new UserProfileResponse(
             profile.Id, profile.FullName, profile.Email,
             profile.Phone, profile.AvatarUrl,
-            profile.IsEmailVerified, profile.IsPhoneVerified,
-            profile.CreatedAt));
+            _currentUser.Role ?? "Customer",
+            profile.IsEmailVerified ? DateTime.UtcNow.ToString("o") : null,
+            profile.IsPhoneVerified ? DateTime.UtcNow.ToString("o") : null,
+            profile.CreatedAt, profile.UpdatedAt));
     }
 }

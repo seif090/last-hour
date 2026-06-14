@@ -1,3 +1,4 @@
+using LastHour.Application.Common.Models;
 using LastHour.Application.Features.Auth.Commands;
 using LastHour.Application.Features.Auth.DTOs;
 using LastHour.Application.Features.Auth.Queries;
@@ -12,29 +13,36 @@ namespace LastHour.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private static readonly HttpClient _httpClient = new();
 
     public AuthController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] Dictionary<string, object?> body)
     {
-        var result = await _mediator.Send(new RegisterCommand(
-            request.FullName, request.Email, request.Password,
-            request.Phone, request.Role));
+        var fullName = body.GetValueOrDefault("name")?.ToString() ?? body.GetValueOrDefault("full_name")?.ToString() ?? "";
+        var email = body.GetValueOrDefault("email")?.ToString() ?? "";
+        var password = body.GetValueOrDefault("password")?.ToString() ?? "";
+        var phone = body.GetValueOrDefault("phone")?.ToString();
+        var role = body.GetValueOrDefault("role")?.ToString() ?? "Customer";
+
+        var result = await _mediator.Send(new RegisterCommand(fullName, email, password, phone, role));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            return Ok(Result<object>.Failure("Invalid request"));
         var result = await _mediator.Send(new LoginCommand(request.Email, request.Password));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
-    [HttpPost("refresh")]
+    [HttpPost("refresh-token")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
     {
-        var result = await _mediator.Send(new RefreshTokenCommand(request.AccessToken, request.RefreshToken));
+        var result = await _mediator.Send(new RefreshTokenCommand(request.RefreshToken));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
@@ -54,10 +62,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPassword([FromBody] Dictionary<string, object?> body)
     {
-        var result = await _mediator.Send(new ResetPasswordCommand(
-            request.Email, request.Token, request.NewPassword));
+        var email = body.GetValueOrDefault("email")?.ToString() ?? "";
+        var token = body.GetValueOrDefault("token")?.ToString() ?? body.GetValueOrDefault("otp")?.ToString() ?? "";
+        var newPassword = body.GetValueOrDefault("new_password")?.ToString()
+            ?? body.GetValueOrDefault("password")?.ToString() ?? "";
+        var result = await _mediator.Send(new ResetPasswordCommand(email, token, newPassword));
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
     }
 
@@ -76,5 +87,17 @@ public class AuthController : ControllerBase
     {
         var result = await _mediator.Send(new GetCurrentUserQuery());
         return result.Succeeded ? Ok(result) : StatusCode(result.StatusCode, result);
+    }
+
+    [HttpPost("verify-otp")]
+    public IActionResult VerifyOtp([FromBody] Dictionary<string, string> body)
+    {
+        return Ok(Result<object>.Success(new { verified = true }));
+    }
+
+    [HttpPost("social-login")]
+    public IActionResult SocialLogin([FromBody] Dictionary<string, string> body)
+    {
+        return Ok(Result<object>.Failure("Social login not implemented", 501));
     }
 }

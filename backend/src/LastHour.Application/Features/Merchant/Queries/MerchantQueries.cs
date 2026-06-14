@@ -2,6 +2,7 @@ using LastHour.Application.Common.Interfaces;
 using LastHour.Application.Common.Models;
 using LastHour.Application.Features.Merchant.DTOs;
 using LastHour.Application.Features.Offers.DTOs;
+using LastHour.Application.Features.Orders.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,12 +15,22 @@ public record CreateMerchantOfferCommand(
     string Title, string Description, string Category,
     decimal OriginalPrice, decimal DiscountPrice, int Quantity,
     DateTime? PickupStart = null, DateTime? PickupEnd = null) : IRequest<Result<OfferResponse>>;
+public record UpdateMerchantOfferCommand(
+    string OfferId, string? Title, string? Description, decimal? OriginalPrice,
+    decimal? DiscountPrice, int? Quantity) : IRequest<Result<OfferResponse>>;
+public record ToggleMerchantOfferActiveCommand(string OfferId) : IRequest<Result>;
+public record GetMerchantOrdersQuery(int Page = 1, int PageSize = 20) : IRequest<Result<PaginatedList<OrderResponse>>>;
+public record UpdateMerchantOrderCommand(string OrderId, string Status) : IRequest<Result>;
 
 public class MerchantQueryHandlers :
     IRequestHandler<GetMerchantDashboardQuery, Result<DashboardResponse>>,
     IRequestHandler<GetMerchantReportsQuery, Result<MerchantReportsResponse>>,
     IRequestHandler<GetMyOffersQuery, Result<PaginatedList<OfferResponse>>>,
-    IRequestHandler<CreateMerchantOfferCommand, Result<OfferResponse>>
+    IRequestHandler<CreateMerchantOfferCommand, Result<OfferResponse>>,
+    IRequestHandler<UpdateMerchantOfferCommand, Result<OfferResponse>>,
+    IRequestHandler<ToggleMerchantOfferActiveCommand, Result>,
+    IRequestHandler<GetMerchantOrdersQuery, Result<PaginatedList<OrderResponse>>>,
+    IRequestHandler<UpdateMerchantOrderCommand, Result>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUser;
@@ -154,5 +165,86 @@ public class MerchantQueryHandlers :
             offer.ExpiryTime, offer.Category, offer.ImageUrl,
             new List<string>(), 0, 0, 0, false, true, offer.CreatedAt,
             offer.DiscountPercentage, false, false));
+    }
+
+    public async Task<Result<OfferResponse>> Handle(UpdateMerchantOfferCommand request, CancellationToken ct)
+    {
+        var storeId = await GetStoreIdAsync();
+        if (storeId is null) return Result<OfferResponse>.Failure("Store not found", 404);
+
+        var offer = await _unitOfWork.Offers.GetByIdAsync(request.OfferId);
+        if (offer is null || offer.StoreId != storeId)
+            return Result<OfferResponse>.Failure("Offer not found", 404);
+
+        if (request.Title is not null) offer.Title = request.Title;
+        if (request.Description is not null) offer.Description = request.Description;
+        if (request.OriginalPrice.HasValue) offer.OriginalPrice = request.OriginalPrice.Value;
+        if (request.DiscountPrice.HasValue) offer.DiscountPrice = request.DiscountPrice.Value;
+        if (request.Quantity.HasValue) { offer.OriginalQuantity = request.Quantity.Value; offer.RemainingQuantity = request.Quantity.Value; }
+
+        await _unitOfWork.CompleteAsync(ct);
+
+        return Result<OfferResponse>.Success(new OfferResponse(
+            offer.Id, offer.Title, offer.Description, storeId, "", null,
+            offer.OriginalPrice, offer.DiscountPrice, offer.RemainingQuantity, offer.OriginalQuantity,
+            offer.ExpiryTime, offer.Category, offer.ImageUrl,
+            new List<string>(), 0, offer.Rating, offer.ReviewCount, false, offer.IsActive, offer.CreatedAt,
+            offer.DiscountPercentage, offer.IsExpired, offer.IsSoldOut));
+    }
+
+    public async Task<Result> Handle(ToggleMerchantOfferActiveCommand request, CancellationToken ct)
+    {
+        var storeId = await GetStoreIdAsync();
+        if (storeId is null) return Result.Failure("Store not found", 404);
+
+        var offer = await _unitOfWork.Offers.GetByIdAsync(request.OfferId);
+        if (offer is null || offer.StoreId != storeId)
+            return Result.Failure("Offer not found", 404);
+
+        offer.IsActive = !offer.IsActive;
+        await _unitOfWork.CompleteAsync(ct);
+        return Result.Success();
+    }
+
+    public async Task<Result<PaginatedList<OrderResponse>>> Handle(GetMerchantOrdersQuery request, CancellationToken ct)
+    {
+        var storeId = await GetStoreIdAsync();
+        if (storeId is null) return Result<PaginatedList<OrderResponse>>.Failure("Store not found", 404);
+
+        var query = _unitOfWork.Orders.GetAll()
+            .Include(o => o.Items)
+            .Where(o => o.StoreId == storeId)
+            .OrderByDescending(o => o.CreatedAt);
+
+        var total = await query.CountAsync(ct);
+        var items = await query.Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize).ToListAsync(ct);
+
+        var mapped = items.Select(o => new OrderResponse(
+            o.Id, o.StoreId, "", null,
+            o.Items.Select(i => new OrderItemResponse(i.Id, i.OfferId, i.OfferTitle, i.OfferImageUrl, i.Price, i.Quantity, i.Total)).ToList(),
+            o.Subtotal, o.ServiceFee, o.DeliveryFee, o.Discount, o.Total,
+            o.Status, o.CouponCode, o.PaymentMethod, o.IsDelivery, o.DeliveryAddress,
+            o.CreatedAt, o.EstimatedPickupTime, o.PickedUpAt, o.Notes)).ToList();
+
+        return Result<PaginatedList<OrderResponse>>.Success(
+            new PaginatedList<OrderResponse>(mapped, total, request.Page, request.PageSize));
+    }
+
+    public async Task<Result> Handle(UpdateMerchantOrderCommand request, CancellationToken ct)
+    {
+        var storeId = await GetStoreIdAsync();
+        if (storeId is null) return Result.Failure("Store not found", 404);
+
+        var order = await _unitOfWork.Orders.GetByIdAsync(request.OrderId);
+        if (order is null || order.StoreId != storeId)
+            return Result.Failure("Order not found", 404);
+
+        order.Status = request.Status;
+        if (request.Status == "picked_up") order.PickedUpAt = DateTime.UtcNow;
+        if (request.Status == "delivered") order.DeliveredAt = DateTime.UtcNow;
+
+        await _unitOfWork.CompleteAsync(ct);
+        return Result.Success();
     }
 }

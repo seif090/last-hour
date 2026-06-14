@@ -27,8 +27,6 @@ public record ChangePasswordCommand(
     string CurrentPassword,
     string NewPassword) : IRequest<Result>;
 
-public record RefreshTokenCommand(
-    string AccessToken,
-    string RefreshToken) : IRequest<Result<AuthResponse>>;
+public record RefreshTokenCommand(string RefreshToken) : IRequest<Result<RefreshResponse>>;
 
 public record LogoutCommand : IRequest<Result>;

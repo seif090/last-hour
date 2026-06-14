@@ -20,27 +20,36 @@ public record ChangePasswordRequest(
     string CurrentPassword,
     string NewPassword);
 
-public record RefreshTokenRequest(
-    string AccessToken,
-    string RefreshToken);
+public record RefreshTokenRequest(string RefreshToken);
+
+public record RefreshResponse(
+    string Token,
+    string RefreshToken,
+    DateTime ExpiresAt);
 
 public record AuthResponse(
-    string UserId,
-    string FullName,
+    string Id,
+    string Name,
     string Email,
     string? Phone,
     string? AvatarUrl,
     string Role,
     string AccessToken,
     string RefreshToken,
-    DateTime ExpiresAt);
+    DateTime ExpiresAt,
+    string? EmailVerifiedAt = null,
+    string? PhoneVerifiedAt = null,
+    string? CreatedAt = null,
+    string? UpdatedAt = null);
 
 public record UserProfileResponse(
     string Id,
-    string FullName,
+    string Name,
     string Email,
     string? Phone,
     string? AvatarUrl,
-    bool IsEmailVerified,
-    bool IsPhoneVerified,
-    DateTime CreatedAt);
+    string Role,
+    string? EmailVerifiedAt,
+    string? PhoneVerifiedAt,
+    DateTime CreatedAt,
+    DateTime? UpdatedAt);

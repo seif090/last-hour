@@ -1,8 +1,15 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using LastHour.API.Filters;
 using LastHour.API.Middleware;
 using LastHour.API.Services;
 using LastHour.Application;
 using LastHour.Application.Common.Interfaces;
+using LastHour.Infrastructure.Data;
 using LastHour.Infrastructure.Extensions;
+using LastHour.Infrastructure.Identity.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -24,7 +31,16 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<ApiResponseFilter>();
+    })
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower));
+    });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
@@ -82,6 +98,25 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            await context.Database.MigrateAsync();
+
+            var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            await ApplicationDbContextSeed.SeedAsync(context, userManager, roleManager);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "An error occurred while seeding the database");
+        }
+    }
 
     app.Run();
 }

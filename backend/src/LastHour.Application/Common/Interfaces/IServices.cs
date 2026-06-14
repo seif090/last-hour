@@ -15,7 +15,7 @@ public interface IIdentityService
     Task<(bool Success, string? Error, string? AccessToken, string? RefreshToken)> GenerateTokensAsync(
         string userId, string email, string role);
     Task<(bool Success, string? Error, string? AccessToken, string? RefreshToken)> RefreshTokenAsync(
-        string refreshToken, string jwtId);
+        string refreshToken);
     Task<(bool Success, string? Error)> RevokeRefreshTokenAsync(string userId);
 }
 
