@@ -15,9 +15,20 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(homeCategoriesProvider);
-    final featuredOffers = ref.watch(featuredOffersProvider);
-    final filteredOffers = ref.watch(filteredOffersProvider);
+    final featuredOffersAsync = ref.watch(homeFeaturedOffersProvider);
+    final filteredOffersAsync = ref.watch(filteredOffersProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
+
+    final featuredOffers = featuredOffersAsync.when(
+      data: (data) => data,
+      loading: () => <HomeOffer>[],
+      error: (_, __) => <HomeOffer>[],
+    );
+    final filteredOffers = filteredOffersAsync.when(
+      data: (data) => data,
+      loading: () => <HomeOffer>[],
+      error: (_, __) => <HomeOffer>[],
+    );
 
     return Scaffold(
       body: SafeArea(

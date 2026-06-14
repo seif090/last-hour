@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../providers/merchant_providers.dart';
 
-class MerchantLoginScreen extends StatefulWidget {
+class MerchantLoginScreen extends ConsumerStatefulWidget {
   const MerchantLoginScreen({super.key});
 
   @override
-  State<MerchantLoginScreen> createState() => _MerchantLoginScreenState();
+  ConsumerState<MerchantLoginScreen> createState() => _MerchantLoginScreenState();
 }
 
-class _MerchantLoginScreenState extends State<MerchantLoginScreen> {
+class _MerchantLoginScreenState extends ConsumerState<MerchantLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -28,6 +30,12 @@ class _MerchantLoginScreenState extends State<MerchantLoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final state = ref.watch(merchantAuthProvider);
+    ref.listen(merchantAuthProvider, (_, next) {
+      if (next.isAuthenticated) {
+        context.go('/merchant/dashboard');
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -91,14 +99,29 @@ class _MerchantLoginScreenState extends State<MerchantLoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                CustomButton(
-                  label: 'Sign In',
-                  onPressed: () {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      context.go('/merchant/dashboard');
-                    }
-                  },
-                ),
+                if (state.isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  CustomButton(
+                    label: 'Sign In',
+                    onPressed: () {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        ref.read(merchantAuthProvider.notifier).login(
+                          email: _emailController.text.trim(),
+                          password: _passwordController.text.trim(),
+                        );
+                      }
+                    },
+                  ),
+                if (state.error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      state.error!,
+                      style: const TextStyle(color: AppColors.discountRed, fontSize: 13),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

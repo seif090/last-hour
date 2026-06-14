@@ -1,39 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/widgets/loading_skeleton.dart';
+import '../../../../shared/widgets/error_widget_view.dart';
+import '../../domain/entities/merchant.dart';
+import '../../../orders/domain/entities/order.dart';
+import '../providers/merchant_providers.dart';
 
-class MerchantDashboardScreen extends StatelessWidget {
+class MerchantDashboardScreen extends ConsumerWidget {
   const MerchantDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final dashboardAsync = ref.watch(merchantDashboardProvider);
+    final ordersAsync = ref.watch(merchantOrdersProvider);
+
+    return dashboardAsync.when(
+      data: (merchant) => _buildContent(context, theme, ref, merchant, ordersAsync),
+      loading: () => const Scaffold(body: LoadingSkeleton(itemCount: 3)),
+      error: (error, _) => Scaffold(
+        body: ErrorWidgetView(
+          title: 'Failed to load dashboard',
+          subtitle: error.toString(),
+          onRetry: () => ref.invalidate(merchantDashboardProvider),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ThemeData theme, WidgetRef ref, Merchant merchant, AsyncValue<List<Order>> ordersAsync) {
+    final orderCount = ordersAsync.when(data: (o) => o.length, loading: () => 0, error: (_, __) => 0);
 
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildHeader(theme),
+            _buildHeader(theme, merchant),
             const SizedBox(height: 20),
-            _buildKpiRow(theme),
+            _buildKpiRow(theme, merchant, orderCount),
             const SizedBox(height: 24),
             _buildQuickActions(theme, context),
             const SizedBox(height: 24),
-            _buildRecentOrders(theme, context),
+            _buildRecentOrders(theme, context, ordersAsync),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(ThemeData theme) {
+  Widget _buildHeader(ThemeData theme, Merchant merchant) {
+    final isOnline = merchant.isOnline;
     return Row(
       children: [
         Container(
-          width: 48,
-          height: 48,
+          width: 48, height: 48,
           decoration: BoxDecoration(
             color: AppColors.secondary,
             borderRadius: BorderRadius.circular(12),
@@ -45,8 +69,11 @@ class MerchantDashboardScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Le Pain Bakery', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-              Text('Online · 5 active offers', style: AppTextStyles.caption.copyWith(color: AppColors.success)),
+              Text(merchant.storeName, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                '${isOnline ? 'Online' : 'Offline'} · ${merchant.activeOfferCount} active offers',
+                style: AppTextStyles.caption.copyWith(color: isOnline ? AppColors.success : AppColors.grey500),
+              ),
             ],
           ),
         ),
@@ -59,40 +86,39 @@ class MerchantDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildKpiRow(ThemeData theme) {
+  Widget _buildKpiRow(ThemeData theme, Merchant merchant, int orderCount) {
     return Row(
       children: [
-        Expanded(child: _buildKpiCard('Active Offers', '5', Icons.local_offer_rounded, AppColors.primary, theme)),
+        _buildKpiCard(theme, 'Today\'s Revenue', '\$${merchant.todayRevenue.toStringAsFixed(2)}', Icons.trending_up_rounded, AppColors.success),
         const SizedBox(width: 12),
-        Expanded(child: _buildKpiCard('Today\'s Orders', '12', Icons.receipt_long_rounded, AppColors.secondary, theme)),
+        _buildKpiCard(theme, 'Orders', '$orderCount', Icons.shopping_bag_rounded, AppColors.secondary),
       ],
     );
   }
 
-  Widget _buildKpiCard(String label, String value, IconData icon, Color color, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 8, offset: const Offset(0, 2)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(color: color.withAlpha(26), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 14),
-          Text(value, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
-        ],
+  Widget _buildKpiCard(ThemeData theme, String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 6, offset: const Offset(0, 2))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: color.withAlpha(26), borderRadius: BorderRadius.circular(10)),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(height: 12),
+            Text(value, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(label, style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
+          ],
+        ),
       ),
     );
   }
@@ -101,92 +127,85 @@ class MerchantDashboardScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildActionCard(Icons.add_circle_rounded, 'New Offer', AppColors.primary, context)),
+            _buildActionButton(context, 'Create Offer', Icons.add_circle_outline, AppColors.secondary, () => context.push('/merchant/offers/create')),
             const SizedBox(width: 12),
-            Expanded(child: _buildActionCard(Icons.inventory_2_rounded, 'Manage Offers', AppColors.secondary, context)),
+            _buildActionButton(context, 'View Offers', Icons.local_offer_outlined, AppColors.primary, () => context.push('/merchant/offers')),
             const SizedBox(width: 12),
-            Expanded(child: _buildActionCard(Icons.receipt_long_rounded, 'Orders', AppColors.tertiary, context)),
+            _buildActionButton(context, 'Reports', Icons.bar_chart_rounded, AppColors.warning, () => context.push('/merchant/reports')),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildActionCard(IconData icon, String label, Color color, BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-        decoration: BoxDecoration(
-          color: color.withAlpha(15),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withAlpha(51)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(label, style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-          ],
+  Widget _buildActionButton(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: color.withAlpha(13),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 26),
+              const SizedBox(height: 8),
+              Text(label, style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRecentOrders(ThemeData theme, BuildContext context) {
+  Widget _buildRecentOrders(ThemeData theme, BuildContext context, AsyncValue ordersAsync) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Recent Orders', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            TextButton(
-              onPressed: () => context.go('/merchant/orders'),
-              child: const Text('View All', style: TextStyle(color: AppColors.secondary)),
-            ),
+            Text('Recent Orders', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            TextButton(onPressed: () => context.push('/merchant/orders'), child: const Text('View All')),
           ],
         ),
-        const SizedBox(height: 8),
-        _buildOrderRow('#1024', 'Mixed Sushi Box', '5 min ago', '\$9.99', AppColors.warning),
-        const Divider(height: 1),
-        _buildOrderRow('#1023', 'Artisan Croissants', '12 min ago', '\$6.50', AppColors.primary),
-        const Divider(height: 1),
-        _buildOrderRow('#1022', 'Chocolate Cake', '18 min ago', '\$3.99', AppColors.success),
+        ordersAsync.when(
+          data: (orders) {
+            final recent = orders.take(3).toList();
+            return Column(
+              children: recent.map((order) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 6, offset: const Offset(0, 2))],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(color: AppColors.secondary.withAlpha(26), borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.receipt_long_rounded, color: AppColors.secondary, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text('Order #${order.id.substring(0, 6)}', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
+                    Text('\$${order.total.toStringAsFixed(2)}', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: AppColors.secondary)),
+                  ],
+                ),
+              )).toList(),
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => const Text('Could not load orders'),
+        ),
       ],
-    );
-  }
-
-  Widget _buildOrderRow(String orderId, String item, String time, String amount, Color statusColor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: AppColors.grey100, borderRadius: BorderRadius.circular(10)),
-            child: const Icon(Icons.image_outlined, color: AppColors.grey400, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(orderId, style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold)),
-                Text(item, style: AppTextStyles.caption),
-              ],
-            ),
-          ),
-          Text(amount, style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
-          const SizedBox(width: 12),
-          Text(time, style: AppTextStyles.caption.copyWith(fontSize: 10)),
-        ],
-      ),
     );
   }
 }

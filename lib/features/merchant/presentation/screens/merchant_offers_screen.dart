@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../shared/widgets/empty_state_widget.dart';
+import '../../../offers/domain/entities/offer.dart';
+import '../providers/merchant_providers.dart';
 
-class MerchantOffersScreen extends StatelessWidget {
+class MerchantOffersScreen extends ConsumerWidget {
   const MerchantOffersScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final offersAsync = ref.watch(merchantOffersProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -16,45 +22,55 @@ class MerchantOffersScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
-            onPressed: () {},
+            onPressed: () => context.push('/merchant/offers/create'),
             color: AppColors.secondary,
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: 5,
-        itemBuilder: (_, i) => _buildOfferCard(theme, i),
+      body: offersAsync.when(
+        data: (offers) {
+          if (offers.isEmpty) return const EmptyStateWidget.offers();
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: offers.length,
+            itemBuilder: (_, i) => _buildOfferCard(theme, offers[i], ref),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Failed to load offers'),
+              const SizedBox(height: 8),
+              TextButton(onPressed: () => ref.invalidate(merchantOffersProvider), child: const Text('Retry')),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildOfferCard(ThemeData theme, int index) {
-    final names = ['Mixed Sushi Box', 'Artisan Croissants', 'Chocolate Cake', 'Fresh Salad Bowl', 'Margherita Pizza'];
-    final prices = ['\$9.99', '\$6.50', '\$3.99', '\$4.99', '\$5.99'];
-    final remainings = [3, 5, 2, 8, 4];
-    final isActive = index < 3;
-
+  Widget _buildOfferCard(ThemeData theme, Offer offer, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 6, offset: const Offset(0, 2)),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [
           Container(
-            width: 72,
-            height: 72,
+            width: 64, height: 64,
             decoration: BoxDecoration(
               color: AppColors.grey200,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.image_outlined, color: AppColors.grey400),
+            child: offer.imageUrl != null
+                ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(offer.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.image_rounded, color: AppColors.grey400)))
+                : const Icon(Icons.image_rounded, color: AppColors.grey400),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -63,51 +79,42 @@ class MerchantOffersScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Expanded(
-                      child: Text(names[index], style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold)),
-                    ),
+                    Expanded(child: Text(offer.title, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isActive ? AppColors.success.withAlpha(26) : AppColors.grey100,
-                        borderRadius: BorderRadius.circular(6),
+                        color: offer.isActive ? AppColors.success.withAlpha(20) : AppColors.grey200,
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        isActive ? 'Active' : 'Inactive',
+                        offer.isActive ? 'Active' : 'Inactive',
                         style: AppTextStyles.caption.copyWith(
-                          color: isActive ? AppColors.success : AppColors.grey500,
+                          color: offer.isActive ? AppColors.success : AppColors.grey500,
                           fontWeight: FontWeight.w600,
-                          fontSize: 10,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text('Price: ${prices[index]}', style: AppTextStyles.caption),
-                const SizedBox(height: 2),
-                Text('Remaining: ${remainings[index]}', style: AppTextStyles.caption),
-                const SizedBox(height: 8),
-                _buildProgressBar(remainings[index], 10, theme),
+                Text('\$${offer.discountPrice.toStringAsFixed(2)} · ${offer.remainingQuantity}/${offer.originalQuantity} left',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
+                const SizedBox(height: 6),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: offer.originalQuantity > 0 ? offer.remainingQuantity / offer.originalQuantity : 0,
+                    backgroundColor: AppColors.grey200,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      offer.remainingQuantity <= 3 ? AppColors.discountRed : AppColors.primary,
+                    ),
+                    minHeight: 4,
+                  ),
+                ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar(int remaining, int total, ThemeData theme) {
-    final fraction = remaining / total;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: LinearProgressIndicator(
-        value: fraction,
-        minHeight: 6,
-        backgroundColor: AppColors.grey200,
-        valueColor: AlwaysStoppedAnimation<Color>(
-          fraction > 0.5 ? AppColors.success : fraction > 0.2 ? AppColors.warning : AppColors.error,
-        ),
       ),
     );
   }
