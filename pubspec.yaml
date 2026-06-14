@@ -1,0 +1,78 @@
+name: last_hour
+description: "Last Hour - Food Waste Reduction Marketplace"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.8.1
+
+  # Networking
+  dio: ^5.7.0
+
+  # Local Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  flutter_secure_storage: ^9.2.4
+  shared_preferences: ^2.3.5
+
+  # Firebase
+  firebase_core: ^3.12.1
+  firebase_messaging: ^15.2.4
+  firebase_auth: ^5.5.1
+  cloud_firestore: ^5.6.5
+
+  # UI Components
+  google_maps_flutter: ^2.12.0
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  lottie: ^3.3.1
+  flutter_screenutil: ^5.9.3
+  flutter_svg: ^2.0.17
+  photo_view: ^0.15.0
+  image_picker: ^1.1.2
+
+  # Utilities
+  intl: ^0.19.0
+  connectivity_plus: ^6.1.2
+  url_launcher: ^6.3.1
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  fluttertoast: ^8.2.10
+  dotted_border: ^2.1.0
+  flutter_rating_bar: ^4.0.1
+  smooth_page_indicator: ^1.2.1
+  badges: ^3.1.2
+  equatable: ^2.0.7
+
+  # Code Generation
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  json_serializable: ^6.9.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
