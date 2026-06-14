@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -57,27 +58,27 @@ class _MerchantLoginScreenState extends ConsumerState<MerchantLoginScreen> {
                   child: const Icon(Icons.store_rounded, size: 32, color: AppColors.secondary),
                 ),
                 const SizedBox(height: 24),
-                Text('Merchant Sign In', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.merchantSignIn, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text('Manage your store and offers', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500)),
+                Text(AppLocalizations.of(context)!.merchantSignInSubtitle, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500)),
                 const SizedBox(height: 32),
                 CustomTextField(
                   controller: _emailController,
-                  label: 'Email',
-                  hintText: 'Enter your business email',
+                  label: AppLocalizations.of(context)!.email,
+                  hintText: AppLocalizations.of(context)!.businessEmailHint,
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: const Icon(Icons.email_outlined),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Email is required';
-                    if (!v.contains('@')) return 'Invalid email';
+                    if (v == null || v.isEmpty) return AppLocalizations.of(context)!.emailRequired;
+                    if (!v.contains('@')) return AppLocalizations.of(context)!.invalidEmail;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _passwordController,
-                  label: 'Password',
-                  hintText: 'Enter your password',
+                  label: AppLocalizations.of(context)!.password,
+                  hintText: AppLocalizations.of(context)!.passwordHint,
                   obscureText: _obscurePassword,
                   prefixIcon: const Icon(Icons.lock_outlined),
                   suffixIcon: IconButton(
@@ -85,8 +86,8 @@ class _MerchantLoginScreenState extends ConsumerState<MerchantLoginScreen> {
                     onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'At least 6 characters';
+                    if (v == null || v.isEmpty) return AppLocalizations.of(context)!.passwordRequired;
+                    if (v.length < 6) return AppLocalizations.of(context)!.passwordMinChars;
                     return null;
                   },
                 ),
@@ -95,7 +96,7 @@ class _MerchantLoginScreenState extends ConsumerState<MerchantLoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {},
-                    child: const Text('Forgot Password?', style: TextStyle(color: AppColors.secondary)),
+                    child: Text(AppLocalizations.of(context)!.merchantForgotPassword, style: const TextStyle(color: AppColors.secondary)),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -103,7 +104,7 @@ class _MerchantLoginScreenState extends ConsumerState<MerchantLoginScreen> {
                   const Center(child: CircularProgressIndicator())
                 else
                   CustomButton(
-                    label: 'Sign In',
+                    label: AppLocalizations.of(context)!.signIn,
                     onPressed: () {
                       if (_formKey.currentState?.validate() ?? false) {
                         ref.read(merchantAuthProvider.notifier).login(
@@ -126,10 +127,10 @@ class _MerchantLoginScreenState extends ConsumerState<MerchantLoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have a merchant account?", style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500)),
+                    Text(AppLocalizations.of(context)!.noMerchantAccount, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500)),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('Sign Up', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
+                      child: Text(AppLocalizations.of(context)!.merchantSignUp, style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),

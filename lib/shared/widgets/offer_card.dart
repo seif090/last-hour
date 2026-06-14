@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/helpers.dart';
@@ -138,7 +139,7 @@ class OfferCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'Expired',
+                        AppLocalizations.of(context)!.expired,
                         style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
                       ),
                     ),
@@ -148,7 +149,7 @@ class OfferCard extends StatelessWidget {
             Positioned(
               bottom: 8,
               right: 8,
-              child: _buildCountdown(isExpired),
+              child: _buildCountdown(context, isExpired),
             ),
           ],
         ),
@@ -156,8 +157,8 @@ class OfferCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCountdown(bool isExpired) {
-    final timeText = isExpired ? 'Expired' : Helpers.formatRemainingTime(expiryTime);
+  Widget _buildCountdown(BuildContext context, bool isExpired) {
+    final timeText = isExpired ? AppLocalizations.of(context)!.expired : Helpers.formatRemainingTime(expiryTime, context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -263,7 +264,7 @@ class OfferCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '$remainingQuantity left',
+                  AppLocalizations.of(context)!.remainingLeft(remainingQuantity),
                   style: AppTextStyles.caption.copyWith(
                     color: remainingQuantity <= 5
                         ? AppColors.discountRed

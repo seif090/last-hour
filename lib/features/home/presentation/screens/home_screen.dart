@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -78,7 +79,7 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'DELIVER TO',
+                AppLocalizations.of(context)!.deliverTo,
                 style: AppTextStyles.caption.copyWith(
                   fontSize: 9,
                   letterSpacing: 1.2,
@@ -90,7 +91,7 @@ class HomeScreen extends ConsumerWidget {
                   const Icon(Icons.location_on_rounded, size: 14, color: AppColors.primary),
                   const SizedBox(width: 4),
                   Text(
-                    'Current Location',
+                    AppLocalizations.of(context)!.currentLocation,
                     style: AppTextStyles.labelMedium.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -137,7 +138,7 @@ class HomeScreen extends ConsumerWidget {
             Icon(Icons.access_time_rounded, size: 14, color: AppColors.grey500),
             const SizedBox(width: 6),
             Text(
-              'Order by 9 PM for pickup',
+              AppLocalizations.of(context)!.orderBy9pm,
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.grey600,
                 fontWeight: FontWeight.w500,
@@ -167,7 +168,7 @@ class HomeScreen extends ConsumerWidget {
                 Icon(Icons.search_rounded, color: AppColors.grey500, size: 22),
                 const SizedBox(width: 10),
                 Text(
-                  'Search offers, stores...',
+                  AppLocalizations.of(context)!.searchHint,
                   style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey400),
                 ),
                 const Spacer(),
@@ -198,7 +199,7 @@ class HomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Categories'),
+          SectionHeader(title: AppLocalizations.of(context)!.categories),
           SizedBox(
             height: 44,
             child: ListView.separated(
@@ -256,7 +257,7 @@ class HomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Featured Offers', actionLabel: 'See All'),
+          SectionHeader(title: AppLocalizations.of(context)!.featuredOffers, actionLabel: AppLocalizations.of(context)!.seeAll),
           SizedBox(
             height: 320,
             child: ListView.separated(
@@ -303,7 +304,7 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(32),
           child: Center(
             child: Text(
-              'No offers in this category nearby',
+              AppLocalizations.of(context)!.noOffersInCategory,
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500),
             ),
           ),
@@ -315,7 +316,7 @@ class HomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'Nearby Offers', actionLabel: 'See All'),
+          SectionHeader(title: AppLocalizations.of(context)!.nearbyOffers, actionLabel: AppLocalizations.of(context)!.seeAll),
           ...offers.take(4).map((offer) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: OfferCard(
@@ -345,7 +346,7 @@ class HomeScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text('View All Offers'),
+              child: Text(AppLocalizations.of(context)!.viewAllOffers),
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -206,7 +207,7 @@ class PhoneTextField extends StatelessWidget {
       onChanged: onChanged,
       validator: validator,
       keyboardType: TextInputType.phone,
-      hintText: 'Enter phone number',
+      hintText: AppLocalizations.of(context)!.phoneHint,
       prefixIcon: Container(
         padding: const EdgeInsets.only(left: 12, right: 8),
         child: Row(
@@ -236,7 +237,7 @@ class SearchTextField extends StatelessWidget {
     super.key,
     this.controller,
     this.onChanged,
-    this.hintText = 'Search offers, stores...',
+    required this.hintText,
     this.onFilter,
   });
 

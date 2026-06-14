@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import 'custom_button.dart';
 
@@ -13,53 +14,53 @@ class ErrorWidgetView extends StatelessWidget {
 
   const ErrorWidgetView({
     super.key,
-    this.title = 'Something went wrong',
+    required this.title,
     this.subtitle,
-    this.buttonLabel = 'Try Again',
+    this.buttonLabel,
     this.onRetry,
     this.onDismiss,
     this.icon = Icons.error_outline_rounded,
     this.iconColor,
   });
 
-  const ErrorWidgetView.network({
+  ErrorWidgetView.network({
     super.key,
-    this.buttonLabel = 'Retry',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onRetry,
     this.onDismiss,
-  })  : title = 'No internet connection',
-        subtitle = 'Check your connection and try again.',
-        icon = Icons.wifi_off_rounded,
+  })  : icon = Icons.wifi_off_rounded,
         iconColor = AppColors.warning;
 
-  const ErrorWidgetView.server({
+  ErrorWidgetView.server({
     super.key,
-    this.buttonLabel = 'Try Again',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onRetry,
     this.onDismiss,
-  })  : title = 'Server error',
-        subtitle = 'Our servers are having trouble. Please try again later.',
-        icon = Icons.cloud_off_rounded,
+  })  : icon = Icons.cloud_off_rounded,
         iconColor = AppColors.error;
 
-  const ErrorWidgetView.notFound({
+  ErrorWidgetView.notFound({
     super.key,
-    this.buttonLabel = 'Go Back',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onRetry,
     this.onDismiss,
-  })  : title = 'Not found',
-        subtitle = 'The page you\'re looking for doesn\'t exist or has been removed.',
-        icon = Icons.search_off_rounded,
+  })  : icon = Icons.search_off_rounded,
         iconColor = AppColors.grey500;
 
-  const ErrorWidgetView.location({
+  ErrorWidgetView.location({
     super.key,
-    this.buttonLabel = 'Enable Location',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onRetry,
     this.onDismiss,
-  })  : title = 'Location required',
-        subtitle = 'Enable location services to find nearby offers.',
-        icon = Icons.location_off_rounded,
+  })  : icon = Icons.location_off_rounded,
         iconColor = AppColors.warning;
 
   @override
@@ -110,7 +111,7 @@ class ErrorWidgetView extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(right: 12),
                     child: CustomButton(
-                      label: 'Dismiss',
+                      label: AppLocalizations.of(context)!.dismiss,
                       onPressed: onDismiss,
                       type: CustomButtonType.text,
                       isFullWidth: false,
@@ -118,7 +119,7 @@ class ErrorWidgetView extends StatelessWidget {
                   ),
                 if (onRetry != null)
                   CustomButton(
-                    label: buttonLabel ?? 'Try Again',
+                    label: buttonLabel ?? AppLocalizations.of(context)!.tryAgain,
                     onPressed: onRetry,
                     isFullWidth: false,
                   ),

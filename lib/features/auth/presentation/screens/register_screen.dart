@@ -9,6 +9,7 @@ import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/social_login_buttons.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -64,14 +65,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Create Account',
+                  AppLocalizations.of(context)!.createAccount,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Join the fight against food waste',
+                  AppLocalizations.of(context)!.registerSubtitle,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppColors.grey500,
                   ),
@@ -79,8 +80,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 32),
                 CustomTextField(
                   controller: _nameController,
-                  label: 'Full Name',
-                  hintText: 'Enter your full name',
+                  label: AppLocalizations.of(context)!.fullName,
+                  hintText: AppLocalizations.of(context)!.fullNameHint,
                   validator: Validators.name,
                   prefixIcon: const Icon(Icons.person_outline),
                   textInputAction: TextInputAction.next,
@@ -88,8 +89,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _emailController,
-                  label: 'Email',
-                  hintText: 'Enter your email',
+                  label: AppLocalizations.of(context)!.email,
+                  hintText: AppLocalizations.of(context)!.emailHint,
                   keyboardType: TextInputType.emailAddress,
                   validator: Validators.email,
                   prefixIcon: const Icon(Icons.email_outlined),
@@ -98,8 +99,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _phoneController,
-                  label: 'Phone (optional)',
-                  hintText: 'Enter your phone number',
+                  label: AppLocalizations.of(context)!.phoneOptional,
+                  hintText: AppLocalizations.of(context)!.phoneHint,
                   keyboardType: TextInputType.phone,
                   prefixIcon: const Icon(Icons.phone_outlined),
                   textInputAction: TextInputAction.next,
@@ -107,8 +108,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _passwordController,
-                  label: 'Password',
-                  hintText: 'Create a strong password',
+                  label: AppLocalizations.of(context)!.password,
+                  hintText: AppLocalizations.of(context)!.createStrongPassword,
                   obscureText: _obscurePassword,
                   validator: Validators.password,
                   prefixIcon: const Icon(Icons.lock_outlined),
@@ -117,8 +118,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _confirmPasswordController,
-                  label: 'Confirm Password',
-                  hintText: 'Confirm your password',
+                  label: AppLocalizations.of(context)!.confirmPassword,
+                  hintText: AppLocalizations.of(context)!.confirmPasswordHint,
                   obscureText: _obscureConfirm,
                   validator: (v) => Validators.confirmPassword(
                     v,
@@ -130,7 +131,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 const SizedBox(height: 24),
                 CustomButton(
-                  label: 'Create Account',
+                  label: AppLocalizations.of(context)!.createAccount,
                   onPressed: _register,
                   isLoading: authState.isLoading,
                 ),
@@ -151,7 +152,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'or sign up with',
+                        AppLocalizations.of(context)!.orSignUpWith,
                         style: AppTextStyles.caption,
                       ),
                     ),
@@ -165,13 +166,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account? ',
+                      AppLocalizations.of(context)!.alreadyHaveAccount,
                       style: theme.textTheme.bodyMedium,
                     ),
                     GestureDetector(
                       onTap: () => context.pop(),
                       child: Text(
-                        'Sign In',
+                        AppLocalizations.of(context)!.signIn,
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,

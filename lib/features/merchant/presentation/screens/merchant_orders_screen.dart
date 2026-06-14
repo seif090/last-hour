@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
@@ -24,7 +25,7 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Orders'),
+        title: Text(AppLocalizations.of(context)!.orders),
         centerTitle: true,
       ),
       body: Column(
@@ -34,7 +35,7 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
             child: ordersAsync.when(
               data: (orders) {
                 final filtered = _filterOrders(orders);
-                if (filtered.isEmpty) return const EmptyStateWidget.orders();
+                if (filtered.isEmpty) return EmptyStateWidget.orders(title: AppLocalizations.of(context)!.noOrdersTitle, subtitle: AppLocalizations.of(context)!.noOrdersSubtitle);
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: filtered.length,
@@ -46,9 +47,9 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Failed to load orders'),
+                    Text(AppLocalizations.of(context)!.couldNotLoadOrders),
                     const SizedBox(height: 8),
-                    TextButton(onPressed: () => ref.invalidate(merchantOrdersProvider), child: const Text('Retry')),
+                    TextButton(onPressed: () => ref.invalidate(merchantOrdersProvider), child: Text(AppLocalizations.of(context)!.retry)),
                   ],
                 ),
               ),
@@ -70,7 +71,14 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
   }
 
   Widget _buildTabBar() {
+    final l10n = AppLocalizations.of(context)!;
     final tabs = ['New', 'Preparing', 'Ready', 'Completed'];
+    final tabLabels = {
+      'New': l10n.newTab,
+      'Preparing': l10n.preparing,
+      'Ready': l10n.ready,
+      'Completed': l10n.completed,
+    };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -89,7 +97,7 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
                   border: Border.all(color: isActive ? AppColors.secondary : AppColors.grey300),
                 ),
                 child: Text(
-                  t,
+                  tabLabels[t]!,
                   style: AppTextStyles.labelMedium.copyWith(
                     color: isActive ? Colors.white : AppColors.grey700,
                     fontWeight: FontWeight.w600,
@@ -141,7 +149,7 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
                 children: [
                   Row(
                     children: [
-                      Text('Order #${order.id.length > 6 ? order.id.substring(0, 6) : order.id}',
+                      Text(AppLocalizations.of(context)!.order(order.id.length > 6 ? order.id.substring(0, 6) : order.id),
                         style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                       const Spacer(),
                       Text('\$${order.total.toStringAsFixed(2)}',
@@ -149,7 +157,7 @@ class _MerchantOrdersScreenState extends ConsumerState<MerchantOrdersScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('${order.items.length} items',
+                  Text(AppLocalizations.of(context)!.itemsCount(order.items.length),
                     style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
                 ],
               ),

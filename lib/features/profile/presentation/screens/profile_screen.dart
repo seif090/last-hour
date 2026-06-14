@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -19,25 +20,25 @@ class ProfileScreen extends ConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             _buildProfileHeader(context, theme, authState),
-            _buildMenuSection(theme, 'Account', const [
-              _MenuItem(Icons.person_outline, 'Edit Profile'),
-              _MenuItem(Icons.location_on_outlined, 'Saved Addresses'),
-              _MenuItem(Icons.favorite_outline, 'Favorite Stores'),
-              _MenuItem(Icons.payment_outlined, 'Payment Methods'),
+            _buildMenuSection(theme, AppLocalizations.of(context)!.account, [
+              _MenuItem(Icons.person_outline, AppLocalizations.of(context)!.editProfile),
+              _MenuItem(Icons.location_on_outlined, AppLocalizations.of(context)!.savedAddresses),
+              _MenuItem(Icons.favorite_outline, AppLocalizations.of(context)!.favoriteStores),
+              _MenuItem(Icons.payment_outlined, AppLocalizations.of(context)!.paymentMethods),
             ]),
-            _buildMenuSection(theme, 'Preferences', const [
-              _MenuItem(Icons.notifications_outlined, 'Notifications'),
-              _MenuItem(Icons.language_outlined, 'Language'),
-              _MenuItem(Icons.dark_mode_outlined, 'Dark Mode'),
+            _buildMenuSection(theme, AppLocalizations.of(context)!.preferences, [
+              _MenuItem(Icons.notifications_outlined, AppLocalizations.of(context)!.notifications),
+              _MenuItem(Icons.language_outlined, AppLocalizations.of(context)!.language),
+              _MenuItem(Icons.dark_mode_outlined, AppLocalizations.of(context)!.darkMode),
             ]),
-            _buildMenuSection(theme, 'Support', const [
-              _MenuItem(Icons.help_outline, 'Help Center'),
-              _MenuItem(Icons.info_outline, 'About'),
+            _buildMenuSection(theme, AppLocalizations.of(context)!.support, [
+              _MenuItem(Icons.help_outline, AppLocalizations.of(context)!.helpCenter),
+              _MenuItem(Icons.info_outline, AppLocalizations.of(context)!.about),
             ]),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: CustomButton(
-                label: 'Sign Out',
+                label: AppLocalizations.of(context)!.signOut,
                 onPressed: () {
                   ref.read(authProvider.notifier).logout();
                 },
@@ -87,14 +88,14 @@ class ProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  authState.user?.name ?? 'User',
+                  authState.user?.name ?? AppLocalizations.of(context)!.user,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  authState.user?.email ?? 'user@example.com',
+                  authState.user?.email ?? AppLocalizations.of(context)!.defaultEmail,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.grey500,
                   ),

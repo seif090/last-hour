@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
@@ -55,8 +56,8 @@ class _CountdownTimerState extends State<CountdownTimer> {
     super.dispose();
   }
 
-  String _formatDuration(Duration d) {
-    if (d.isNegative) return 'Expired';
+  String _formatDuration(BuildContext context, Duration d) {
+    if (d.isNegative) return AppLocalizations.of(context)!.expired;
     if (d.inDays > 0) {
       return '${d.inDays}d ${d.inHours.remainder(24)}h ${d.inMinutes.remainder(60)}m';
     }
@@ -88,7 +89,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
         ),
         const SizedBox(width: 4),
         Text(
-          _formatDuration(_remaining),
+          _formatDuration(context, _remaining),
           style: widget.textStyle ??
               AppTextStyles.countdown.copyWith(color: color),
         ),

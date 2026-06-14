@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
@@ -14,10 +15,11 @@ class MerchantOffersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final offersAsync = ref.watch(merchantOffersProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Offers'),
+        title: Text(l10n.myOffers),
         centerTitle: true,
         actions: [
           IconButton(
@@ -29,11 +31,11 @@ class MerchantOffersScreen extends ConsumerWidget {
       ),
       body: offersAsync.when(
         data: (offers) {
-          if (offers.isEmpty) return const EmptyStateWidget.offers();
+          if (offers.isEmpty) return EmptyStateWidget.offers(title: l10n.noOffersTitle, subtitle: l10n.noOffersSubtitle);
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: offers.length,
-            itemBuilder: (_, i) => _buildOfferCard(theme, offers[i], ref),
+            itemBuilder: (_, i) => _buildOfferCard(theme, offers[i], ref, context),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -41,9 +43,9 @@ class MerchantOffersScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Failed to load offers'),
+              Text(l10n.failedToLoadOffers),
               const SizedBox(height: 8),
-              TextButton(onPressed: () => ref.invalidate(merchantOffersProvider), child: const Text('Retry')),
+              TextButton(onPressed: () => ref.invalidate(merchantOffersProvider), child: Text(l10n.retry)),
             ],
           ),
         ),
@@ -51,7 +53,7 @@ class MerchantOffersScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildOfferCard(ThemeData theme, Offer offer, WidgetRef ref) {
+  Widget _buildOfferCard(ThemeData theme, Offer offer, WidgetRef ref, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -87,7 +89,7 @@ class MerchantOffersScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        offer.isActive ? 'Active' : 'Inactive',
+                        offer.isActive ? AppLocalizations.of(context)!.active : AppLocalizations.of(context)!.inactive,
                         style: AppTextStyles.caption.copyWith(
                           color: offer.isActive ? AppColors.success : AppColors.grey500,
                           fontWeight: FontWeight.w600,
@@ -97,7 +99,7 @@ class MerchantOffersScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text('\$${offer.discountPrice.toStringAsFixed(2)} · ${offer.remainingQuantity}/${offer.originalQuantity} left',
+                Text('\$${offer.discountPrice.toStringAsFixed(2)} · ${AppLocalizations.of(context)!.remainingLeft(offer.remainingQuantity)}',
                   style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
                 const SizedBox(height: 6),
                 ClipRRect(

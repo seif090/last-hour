@@ -5,6 +5,7 @@ import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../providers/auth_provider.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -97,7 +98,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               ),
               const SizedBox(height: 24),
               Text(
-                'Last Hour',
+                AppLocalizations.of(context)!.appName,
                 style: AppTextStyles.displaySmall.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -105,7 +106,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Save food. Save money. Save the planet.',
+                AppLocalizations.of(context)!.appTagline,
                 style: AppTextStyles.bodyLarge.copyWith(
                   color: Colors.white.withAlpha(204),
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loading_skeleton.dart';
@@ -16,28 +17,28 @@ class MerchantReportsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reports'),
+        title: Text(AppLocalizations.of(context)!.reportsTitle),
         centerTitle: true,
       ),
       body: reportsAsync.when(
         data: (data) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildPeriodSelector(),
+            _buildPeriodSelector(context),
             const SizedBox(height: 20),
-            _buildRevenueCard(theme, data),
+            _buildRevenueCard(theme, data, context),
             const SizedBox(height: 16),
-            _buildStatsGrid(theme, data),
+            _buildStatsGrid(theme, data, context),
             const SizedBox(height: 16),
-            _buildTopSellingCard(theme, data),
+            _buildTopSellingCard(theme, data, context),
             const SizedBox(height: 16),
-            _buildRecentTransactions(theme, data),
+            _buildRecentTransactions(theme, data, context),
           ],
         ),
       loading: () => const Scaffold(body: LoadingSkeleton(itemCount: 3)),
       error: (error, _) => Scaffold(
         body: ErrorWidgetView(
-          title: 'Failed to load reports',
+          title: AppLocalizations.of(context)!.failedToLoadReports,
           subtitle: error.toString(),
           onRetry: () => ref.invalidate(merchantReportsProvider),
         ),
@@ -46,24 +47,24 @@ class MerchantReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPeriodSelector() {
+  Widget _buildPeriodSelector(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.grey100,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          _PeriodChip(label: 'Today', isActive: false),
-          _PeriodChip(label: 'This Week', isActive: true),
-          _PeriodChip(label: 'This Month', isActive: false),
+          _PeriodChip(label: AppLocalizations.of(context)!.today, isActive: false),
+          _PeriodChip(label: AppLocalizations.of(context)!.thisWeek, isActive: true),
+          _PeriodChip(label: AppLocalizations.of(context)!.thisMonth, isActive: false),
         ],
       ),
     );
   }
 
-  Widget _buildRevenueCard(ThemeData theme, Map<String, dynamic> data) {
+  Widget _buildRevenueCard(ThemeData theme, Map<String, dynamic> data, BuildContext context) {
     final revenue = data['total_revenue'] ?? 0.0;
     return Container(
       padding: const EdgeInsets.all(20),
@@ -74,24 +75,25 @@ class MerchantReportsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Total Revenue', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
+          Text(AppLocalizations.of(context)!.totalRevenue, style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
           const SizedBox(height: 8),
           Text('\$${(revenue is num ? revenue : 0).toStringAsFixed(2)}',
             style: theme.textTheme.headlineLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('${data['total_orders'] ?? 0} orders completed',
+          Text(AppLocalizations.of(context)!.ordersCompleted(data['total_orders'] ?? 0),
             style: AppTextStyles.caption.copyWith(color: Colors.white60)),
         ],
       ),
     );
   }
 
-  Widget _buildStatsGrid(ThemeData theme, Map<String, dynamic> data) {
+  Widget _buildStatsGrid(ThemeData theme, Map<String, dynamic> data, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final stats = [
-      {'label': 'Avg. Order', 'value': '\$${(data['avg_order_value'] ?? 0.0).toStringAsFixed(2)}', 'icon': Icons.shopping_cart_rounded},
-      {'label': 'Items Saved', 'value': '${data['items_saved'] ?? 0}', 'icon': Icons.eco_rounded},
-      {'label': 'Rating', 'value': (data['rating'] ?? 0.0).toStringAsFixed(1), 'icon': Icons.star_rounded},
-      {'label': 'Customers', 'value': '${data['customers'] ?? 0}', 'icon': Icons.people_rounded},
+      {'label': l10n.avgOrder, 'value': '\$${(data['avg_order_value'] ?? 0.0).toStringAsFixed(2)}', 'icon': Icons.shopping_cart_rounded},
+      {'label': l10n.itemsSaved, 'value': '${data['items_saved'] ?? 0}', 'icon': Icons.eco_rounded},
+      {'label': l10n.rating, 'value': (data['rating'] ?? 0.0).toStringAsFixed(1), 'icon': Icons.star_rounded},
+      {'label': l10n.customers, 'value': '${data['customers'] ?? 0}', 'icon': Icons.people_rounded},
     ];
 
     return GridView.builder(
@@ -124,7 +126,7 @@ class MerchantReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTopSellingCard(ThemeData theme, Map<String, dynamic> data) {
+  Widget _buildTopSellingCard(ThemeData theme, Map<String, dynamic> data, BuildContext context) {
     final topSelling = data['top_selling'] as List<dynamic>? ?? [];
     return Container(
       padding: const EdgeInsets.all(16),
@@ -136,10 +138,10 @@ class MerchantReportsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Top Selling Items', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.topSellingItems, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           if (topSelling.isEmpty)
-            const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No data yet', style: TextStyle(color: AppColors.grey500)))),
+            Padding(padding: const EdgeInsets.all(16), child: Center(child: Text(AppLocalizations.of(context)!.noDataYet, style: const TextStyle(color: AppColors.grey500)))),
           ...topSelling.take(5).map((item) {
             final map = item as Map<String, dynamic>;
             return Padding(
@@ -153,7 +155,7 @@ class MerchantReportsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(child: Text(map['name'] ?? 'Item', style: AppTextStyles.bodyMedium)),
-                  Text('${map['count'] ?? 0} sold', style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
+                  Text(AppLocalizations.of(context)!.sold(map['count'] ?? 0), style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
                   const SizedBox(width: 12),
                   Text('\$${(map['revenue'] ?? 0).toStringAsFixed(2)}', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                 ],
@@ -165,7 +167,7 @@ class MerchantReportsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentTransactions(ThemeData theme, Map<String, dynamic> data) {
+  Widget _buildRecentTransactions(ThemeData theme, Map<String, dynamic> data, BuildContext context) {
     final transactions = data['transactions'] as List<dynamic>? ?? [];
     return Container(
       padding: const EdgeInsets.all(16),
@@ -177,10 +179,10 @@ class MerchantReportsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Recent Transactions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.recentTransactions, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           if (transactions.isEmpty)
-            const Padding(padding: EdgeInsets.all(16), child: Center(child: Text('No transactions yet', style: TextStyle(color: AppColors.grey500)))),
+            Padding(padding: const EdgeInsets.all(16), child: Center(child: Text(AppLocalizations.of(context)!.noTransactionsYet, style: const TextStyle(color: AppColors.grey500)))),
           ...transactions.take(5).map((txn) {
             final map = txn as Map<String, dynamic>;
             return Padding(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -35,7 +36,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
-                'My Orders',
+                AppLocalizations.of(context)!.myOrders,
                 style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
@@ -44,7 +45,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               child: ordersAsync.when(
                 data: (orders) {
                   if (orders.isEmpty) {
-                    return const EmptyStateWidget.orders();
+                    return EmptyStateWidget.orders(title: AppLocalizations.of(context)!.noOrdersTitle, subtitle: AppLocalizations.of(context)!.noOrdersSubtitle);
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -54,7 +55,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, _) => ErrorWidgetView(
-                  title: 'Could not load orders',
+                  title: AppLocalizations.of(context)!.couldNotLoadOrders,
                   subtitle: error.toString(),
                   onRetry: () => ref.invalidate(ordersByStatusProvider(status)),
                 ),
@@ -72,6 +73,15 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
       case 'Completed': return OrderStatus.delivered;
       case 'Cancelled': return OrderStatus.cancelled;
       default: return null;
+    }
+  }
+
+  String _tabLabel(String tab) {
+    switch (tab) {
+      case 'Active': return AppLocalizations.of(context)!.active;
+      case 'Completed': return AppLocalizations.of(context)!.completed;
+      case 'Cancelled': return AppLocalizations.of(context)!.cancelled;
+      default: return tab;
     }
   }
 
@@ -98,7 +108,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                     ),
                   ),
                   child: Text(
-                    tab,
+                    _tabLabel(tab),
                     style: AppTextStyles.labelMedium.copyWith(
                       color: isSelected ? Colors.white : AppColors.grey700,
                       fontWeight: FontWeight.w600,
@@ -180,7 +190,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '${order.items.length} item(s)',
+                    AppLocalizations.of(context)!.itemCount(order.items.length),
                     style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey600),
                   ),
                   Text(

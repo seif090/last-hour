@@ -23,53 +23,53 @@ class EmptyStateWidget extends StatelessWidget {
     this.icon,
   });
 
-  const EmptyStateWidget.cart({
+  EmptyStateWidget.cart({
     super.key,
-    this.buttonLabel = 'Browse Offers',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onButtonPressed,
-  })  : title = 'Your cart is empty',
-        subtitle = 'Looks like you haven\'t added anything yet. Browse nearby offers to find great deals!',
-        lottieAsset = null,
+  })  : lottieAsset = null,
         imageAsset = AssetConstants.emptyCart,
         icon = Icons.shopping_cart_outlined;
 
-  const EmptyStateWidget.orders({
+  EmptyStateWidget.orders({
     super.key,
-    this.buttonLabel = 'Explore Offers',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onButtonPressed,
-  })  : title = 'No orders yet',
-        subtitle = 'You haven\'t placed any orders yet. Start exploring and save food from going to waste!',
-        lottieAsset = null,
+  })  : lottieAsset = null,
         imageAsset = AssetConstants.emptyOrders,
         icon = Icons.receipt_long_outlined;
 
-  const EmptyStateWidget.favorites({
+  EmptyStateWidget.favorites({
     super.key,
-    this.buttonLabel = 'Discover Stores',
+    required this.title,
+    required this.subtitle,
+    this.buttonLabel,
     this.onButtonPressed,
-  })  : title = 'No favorites yet',
-        subtitle = 'Save your favorite stores and offers for quick access later.',
-        lottieAsset = null,
+  })  : lottieAsset = null,
         imageAsset = AssetConstants.emptyFavorites,
         icon = Icons.favorite_outline;
 
-  const EmptyStateWidget.search({
+  EmptyStateWidget.search({
     super.key,
+    required this.title,
+    required this.subtitle,
     this.buttonLabel,
     this.onButtonPressed,
-  })  : title = 'No results found',
-        subtitle = 'We couldn\'t find what you\'re looking for. Try a different search term.',
-        lottieAsset = null,
+  })  : lottieAsset = null,
         imageAsset = AssetConstants.emptySearch,
         icon = Icons.search_off;
 
-  const EmptyStateWidget.offers({
+  EmptyStateWidget.offers({
     super.key,
+    required this.title,
+    required this.subtitle,
     this.buttonLabel,
     this.onButtonPressed,
-  })  : title = 'No offers available',
-        subtitle = 'There are no offers right now. Check back later for new deals!',
-        lottieAsset = null,
+  })  : lottieAsset = null,
         imageAsset = AssetConstants.emptyOffers,
         icon = Icons.local_offer_outlined;
 

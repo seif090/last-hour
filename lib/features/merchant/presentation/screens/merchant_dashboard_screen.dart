@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/loading_skeleton.dart';
@@ -18,12 +19,13 @@ class MerchantDashboardScreen extends ConsumerWidget {
     final dashboardAsync = ref.watch(merchantDashboardProvider);
     final ordersAsync = ref.watch(merchantOrdersProvider);
 
+    final l10n = AppLocalizations.of(context)!;
     return dashboardAsync.when(
-      data: (merchant) => _buildContent(context, theme, ref, merchant, ordersAsync),
+      data: (merchant) => _buildContent(context, theme, ref, merchant, ordersAsync, l10n),
       loading: () => const Scaffold(body: LoadingSkeleton(itemCount: 3)),
       error: (error, _) => Scaffold(
         body: ErrorWidgetView(
-          title: 'Failed to load dashboard',
+          title: l10n.failedToLoadDashboard,
           subtitle: error.toString(),
           onRetry: () => ref.invalidate(merchantDashboardProvider),
         ),
@@ -31,7 +33,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, ThemeData theme, WidgetRef ref, Merchant merchant, AsyncValue<List<Order>> ordersAsync) {
+  Widget _buildContent(BuildContext context, ThemeData theme, WidgetRef ref, Merchant merchant, AsyncValue<List<Order>> ordersAsync, AppLocalizations l10n) {
     final orderCount = ordersAsync.when(data: (o) => o.length, loading: () => 0, error: (_, __) => 0);
 
     return Scaffold(
@@ -39,20 +41,20 @@ class MerchantDashboardScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildHeader(theme, merchant),
+            _buildHeader(context, theme, merchant, l10n),
             const SizedBox(height: 20),
-            _buildKpiRow(theme, merchant, orderCount),
+            _buildKpiRow(context, theme, merchant, orderCount, l10n),
             const SizedBox(height: 24),
-            _buildQuickActions(theme, context),
+            _buildQuickActions(theme, context, l10n),
             const SizedBox(height: 24),
-            _buildRecentOrders(theme, context, ordersAsync),
+            _buildRecentOrders(theme, context, ordersAsync, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(ThemeData theme, Merchant merchant) {
+  Widget _buildHeader(BuildContext context, ThemeData theme, Merchant merchant, AppLocalizations l10n) {
     final isOnline = merchant.isOnline;
     return Row(
       children: [
@@ -71,7 +73,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
             children: [
               Text(merchant.storeName, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               Text(
-                '${isOnline ? 'Online' : 'Offline'} · ${merchant.activeOfferCount} active offers',
+                '${isOnline ? l10n.online : l10n.offline} · ${l10n.activeOffersCount(merchant.activeOfferCount)}',
                 style: AppTextStyles.caption.copyWith(color: isOnline ? AppColors.success : AppColors.grey500),
               ),
             ],
@@ -86,12 +88,12 @@ class MerchantDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildKpiRow(ThemeData theme, Merchant merchant, int orderCount) {
+  Widget _buildKpiRow(BuildContext context, ThemeData theme, Merchant merchant, int orderCount, AppLocalizations l10n) {
     return Row(
       children: [
-        _buildKpiCard(theme, 'Today\'s Revenue', '\$${merchant.todayRevenue.toStringAsFixed(2)}', Icons.trending_up_rounded, AppColors.success),
+        _buildKpiCard(theme, l10n.todaysRevenue, '\$${merchant.todayRevenue.toStringAsFixed(2)}', Icons.trending_up_rounded, AppColors.success),
         const SizedBox(width: 12),
-        _buildKpiCard(theme, 'Orders', '$orderCount', Icons.shopping_bag_rounded, AppColors.secondary),
+        _buildKpiCard(theme, l10n.orders, '$orderCount', Icons.shopping_bag_rounded, AppColors.secondary),
       ],
     );
   }
@@ -123,19 +125,19 @@ class MerchantDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickActions(ThemeData theme, BuildContext context) {
+  Widget _buildQuickActions(ThemeData theme, BuildContext context, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Quick Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+        Text(l10n.quickActions, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
         Row(
           children: [
-            _buildActionButton(context, 'Create Offer', Icons.add_circle_outline, AppColors.secondary, () => context.push('/merchant/offers/create')),
+            _buildActionButton(context, l10n.createOffer, Icons.add_circle_outline, AppColors.secondary, () => context.push('/merchant/offers/create')),
             const SizedBox(width: 12),
-            _buildActionButton(context, 'View Offers', Icons.local_offer_outlined, AppColors.primary, () => context.push('/merchant/offers')),
+            _buildActionButton(context, l10n.viewOffers, Icons.local_offer_outlined, AppColors.primary, () => context.push('/merchant/offers')),
             const SizedBox(width: 12),
-            _buildActionButton(context, 'Reports', Icons.bar_chart_rounded, AppColors.warning, () => context.push('/merchant/reports')),
+            _buildActionButton(context, l10n.reports, Icons.bar_chart_rounded, AppColors.warning, () => context.push('/merchant/reports')),
           ],
         ),
       ],
@@ -164,15 +166,15 @@ class MerchantDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRecentOrders(ThemeData theme, BuildContext context, AsyncValue ordersAsync) {
+  Widget _buildRecentOrders(ThemeData theme, BuildContext context, AsyncValue ordersAsync, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Recent Orders', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-            TextButton(onPressed: () => context.push('/merchant/orders'), child: const Text('View All')),
+            Text(l10n.recentOrders, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            TextButton(onPressed: () => context.push('/merchant/orders'), child: Text(l10n.viewAll)),
           ],
         ),
         ordersAsync.when(
@@ -195,7 +197,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
                       child: const Icon(Icons.receipt_long_rounded, color: AppColors.secondary, size: 20),
                     ),
                     const SizedBox(width: 12),
-                    Expanded(child: Text('Order #${order.id.substring(0, 6)}', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
+                    Expanded(child: Text(l10n.order(order.id.substring(0, 6)), style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
                     Text('\$${order.total.toStringAsFixed(2)}', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: AppColors.secondary)),
                   ],
                 ),
@@ -203,7 +205,7 @@ class MerchantDashboardScreen extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => const Text('Could not load orders'),
+          error: (_, __) => Text(l10n.couldNotLoadOrders),
         ),
       ],
     );

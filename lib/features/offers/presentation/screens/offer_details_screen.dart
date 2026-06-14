@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -36,7 +37,7 @@ class _OfferDetailsScreenState extends ConsumerState<OfferDetailsScreen> {
       loading: () => const Scaffold(body: LoadingSkeleton(itemCount: 1)),
       error: (error, _) => Scaffold(
         body: ErrorWidgetView(
-          title: 'Failed to load offer',
+          title: AppLocalizations.of(context)!.failedToLoadOffer,
           subtitle: error.toString(),
           onRetry: () => ref.invalidate(offerDetailsProvider(offerId)),
         ),
@@ -199,12 +200,12 @@ class _OfferDetailsScreenState extends ConsumerState<OfferDetailsScreen> {
           const Divider(),
           const SizedBox(height: 16),
           Text(
-            'Description',
+            AppLocalizations.of(context)!.description,
             style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Text(
-            offer.description.isNotEmpty ? offer.description : 'No description available.',
+            offer.description.isNotEmpty ? offer.description : AppLocalizations.of(context)!.noDescription,
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey600, height: 1.5),
           ),
           const SizedBox(height: 20),
@@ -213,7 +214,7 @@ class _OfferDetailsScreenState extends ConsumerState<OfferDetailsScreen> {
               CountdownTimer(expiryTime: offer.expiryTime),
               const Spacer(),
               Text(
-                '${offer.remainingQuantity} left',
+                AppLocalizations.of(context)!.remainingLeft(offer.remainingQuantity),
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: offer.remainingQuantity <= 3 ? AppColors.discountRed : AppColors.grey600,
                   fontWeight: FontWeight.w600,
@@ -251,14 +252,14 @@ class _OfferDetailsScreenState extends ConsumerState<OfferDetailsScreen> {
             const SizedBox(width: 16),
             Expanded(
               child: CustomButton(
-                label: 'Add to Cart - \$${(offer.discountPrice * _quantity).toStringAsFixed(2)}',
+                label: AppLocalizations.of(context)!.addToCartWithPrice('\$${(offer.discountPrice * _quantity).toStringAsFixed(2)}'),
                 onPressed: () {
                   ref.read(cartRepositoryProvider).addToCart(
                     offerId: offer.id,
                     quantity: _quantity,
                   );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Added to cart!')),
+                    SnackBar(content: Text(AppLocalizations.of(context)!.addedToCart)),
                   );
                 },
               ),

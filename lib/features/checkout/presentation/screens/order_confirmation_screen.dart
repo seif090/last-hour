@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -33,33 +34,33 @@ class OrderConfirmationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Order Placed!',
+                AppLocalizations.of(context)!.orderPlaced,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Your order has been placed successfully',
+                AppLocalizations.of(context)!.orderPlacedSubtitle,
                 style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey500),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              _buildDetailCard(theme),
+              _buildDetailCard(theme, context),
               const Spacer(flex: 2),
               CustomButton(
-                label: 'Track Order',
+                label: AppLocalizations.of(context)!.trackOrder,
                 onPressed: () {},
               ),
               const SizedBox(height: 12),
               CustomButton(
-                label: 'Back to Home',
+                label: AppLocalizations.of(context)!.backToHome,
                 onPressed: () => context.go('/main/home'),
                 type: CustomButtonType.outline,
               ),
               const SizedBox(height: 16),
               Text(
-                'Order #1024',
+                AppLocalizations.of(context)!.orderNumber('1024'),
                 style: AppTextStyles.caption.copyWith(color: AppColors.grey400),
               ),
               const Spacer(),
@@ -70,7 +71,7 @@ class OrderConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailCard(ThemeData theme) {
+  Widget _buildDetailCard(ThemeData theme, BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -80,13 +81,13 @@ class OrderConfirmationScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildInfoRow(Icons.store_rounded, 'Sakura Japanese', 'Store'),
+          _buildInfoRow(Icons.store_rounded, 'Sakura Japanese', AppLocalizations.of(context)!.store),
           const SizedBox(height: 14),
-          _buildInfoRow(Icons.shopping_bag_rounded, 'Ready in 15-20 min', 'Pickup Time'),
+          _buildInfoRow(Icons.shopping_bag_rounded, 'Ready in 15-20 min', AppLocalizations.of(context)!.pickupTime),
           const SizedBox(height: 14),
-          _buildInfoRow(Icons.payment_outlined, 'Cash on pickup', 'Payment'),
+          _buildInfoRow(Icons.payment_outlined, AppLocalizations.of(context)!.cashOnPickup, AppLocalizations.of(context)!.payment),
           const SizedBox(height: 14),
-          _buildInfoRow(Icons.receipt_long_rounded, '\$31.94', 'Total'),
+          _buildInfoRow(Icons.receipt_long_rounded, '\$31.94', AppLocalizations.of(context)!.orderTotal),
         ],
       ),
     );

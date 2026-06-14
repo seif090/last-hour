@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 extension ContextExtensions on BuildContext {
@@ -86,24 +87,25 @@ extension DateTimeExtensions on DateTime {
     return year == other.year && month == other.month && day == other.day;
   }
 
-  String timeAgo() {
+  String timeAgo([BuildContext? context]) {
     final now = DateTime.now();
     final difference = now.difference(this);
+    final loc = context != null ? AppLocalizations.of(context) : null;
 
     if (difference.inSeconds < 60) {
-      return 'Just now';
+      return loc?.justNow ?? 'Just now';
     } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
+      return loc?.minutesAgo(difference.inMinutes) ?? '${difference.inMinutes}m ago';
     } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
+      return loc?.hoursAgo(difference.inHours) ?? '${difference.inHours}h ago';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return loc?.daysAgo(difference.inDays) ?? '${difference.inDays}d ago';
     } else if (difference.inDays < 30) {
-      return '${(difference.inDays / 7).round()}w ago';
+      return loc?.weeksAgo((difference.inDays / 7).round()) ?? '${(difference.inDays / 7).round()}w ago';
     } else if (difference.inDays < 365) {
-      return '${(difference.inDays / 30).round()}mo ago';
+      return loc?.monthsAgo((difference.inDays / 30).round()) ?? '${(difference.inDays / 30).round()}mo ago';
     } else {
-      return '${(difference.inDays / 365).round()}y ago';
+      return loc?.yearsAgo((difference.inDays / 365).round()) ?? '${(difference.inDays / 365).round()}y ago';
     }
   }
 }

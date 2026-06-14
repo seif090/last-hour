@@ -9,6 +9,7 @@ import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/social_login_buttons.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -52,14 +53,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const SizedBox(height: 48),
                 Text(
-                  'Welcome back!',
+                  AppLocalizations.of(context)!.welcomeBack,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to save food and money',
+                  AppLocalizations.of(context)!.signInSubtitle,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppColors.grey500,
                   ),
@@ -67,8 +68,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 40),
                 CustomTextField(
                   controller: _emailController,
-                  label: 'Email',
-                  hintText: 'Enter your email',
+                  label: AppLocalizations.of(context)!.email,
+                  hintText: AppLocalizations.of(context)!.emailHint,
                   keyboardType: TextInputType.emailAddress,
                   validator: Validators.email,
                   prefixIcon: const Icon(Icons.email_outlined),
@@ -76,8 +77,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 16),
                 CustomTextField(
                   controller: _passwordController,
-                  label: 'Password',
-                  hintText: 'Enter your password',
+                  label: AppLocalizations.of(context)!.password,
+                  hintText: AppLocalizations.of(context)!.passwordHint,
                   obscureText: _obscurePassword,
                   validator: Validators.required,
                   prefixIcon: const Icon(Icons.lock_outlined),
@@ -88,12 +89,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push(RouteNames.forgotPassword),
-                    child: const Text('Forgot Password?'),
+                    child: Text(AppLocalizations.of(context)!.forgotPassword),
                   ),
                 ),
                 const SizedBox(height: 24),
                 CustomButton(
-                  label: 'Sign In',
+                  label: AppLocalizations.of(context)!.signIn,
                   onPressed: _login,
                   isLoading: authState.isLoading,
                 ),
@@ -114,7 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text(
-                        'or continue with',
+                        AppLocalizations.of(context)!.orContinueWith,
                         style: AppTextStyles.caption,
                       ),
                     ),
@@ -128,13 +129,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account? ",
+                      AppLocalizations.of(context)!.noAccount,
                       style: theme.textTheme.bodyMedium,
                     ),
                     GestureDetector(
                       onTap: () => context.push(RouteNames.register),
                       child: Text(
-                        'Sign Up',
+                        AppLocalizations.of(context)!.signUp,
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,

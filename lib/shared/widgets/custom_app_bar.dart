@@ -58,7 +58,7 @@ class CustomAppBarWithSearch extends StatelessWidget
 
   const CustomAppBarWithSearch({
     super.key,
-    this.hintText = 'Search offers, stores...',
+    required this.hintText,
     this.onSearch,
     this.onFilter,
     this.controller,

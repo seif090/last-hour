@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -12,28 +13,28 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Order #1024'),
+        title: Text(AppLocalizations.of(context)!.order('1024')),
         centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildStatusCard(theme),
+          _buildStatusCard(theme, context),
           const SizedBox(height: 16),
-          _buildCustomerCard(theme),
+          _buildCustomerCard(theme, context),
           const SizedBox(height: 16),
-          _buildItemsCard(theme),
+          _buildItemsCard(theme, context),
           const SizedBox(height: 16),
-          _buildTimeline(theme),
+          _buildTimeline(theme, context),
           const SizedBox(height: 24),
           CustomButton(
-            label: 'Mark as Ready',
+            label: AppLocalizations.of(context)!.markAsReady,
             onPressed: () {},
             backgroundColor: AppColors.success,
           ),
           const SizedBox(height: 12),
           CustomButton(
-            label: 'Contact Customer',
+            label: AppLocalizations.of(context)!.contactCustomer,
             onPressed: () {},
             type: CustomButtonType.outline,
           ),
@@ -43,7 +44,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusCard(ThemeData theme) {
+  Widget _buildStatusCard(ThemeData theme, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -66,8 +67,8 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Pending Preparation', style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold)),
-                Text('Order placed 12 min ago', style: AppTextStyles.caption),
+                Text(AppLocalizations.of(context)!.pendingPreparation, style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.orderPlacedTime, style: AppTextStyles.caption),
               ],
             ),
           ),
@@ -77,7 +78,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCustomerCard(ThemeData theme) {
+  Widget _buildCustomerCard(ThemeData theme, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -88,7 +89,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Customer', style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey500)),
+          Text(AppLocalizations.of(context)!.customer, style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey500)),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -107,8 +108,8 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('John Doe', style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold)),
-                    Text('john@example.com', style: AppTextStyles.caption),
+                    Text(AppLocalizations.of(context)!.customerName, style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.customerEmail, style: AppTextStyles.caption),
                   ],
                 ),
               ),
@@ -120,7 +121,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildItemsCard(ThemeData theme) {
+  Widget _buildItemsCard(ThemeData theme, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -131,7 +132,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Items', style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey500)),
+          Text(AppLocalizations.of(context)!.items, style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey500)),
           const SizedBox(height: 12),
           _buildItemRow('Mixed Sushi Box', '\$9.99', '2x'),
           const Divider(height: 1),
@@ -144,7 +145,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total', style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context)!.total, style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold)),
                 Text('\$31.94', style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
               ],
             ),
@@ -167,7 +168,7 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeline(ThemeData theme) {
+  Widget _buildTimeline(ThemeData theme, BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -178,12 +179,12 @@ class MerchantOrderDetailsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Timeline', style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey500)),
+          Text(AppLocalizations.of(context)!.timeline, style: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold, color: AppColors.grey500)),
           const SizedBox(height: 16),
-          _buildTimelineStep(Icons.check_circle, 'Order Placed', '12:30 PM', AppColors.success, true),
-          _buildTimelineStep(Icons.hourglass_empty, 'Preparing', 'In progress', AppColors.warning, true),
-          _buildTimelineStep(Icons.shopping_bag_outlined, 'Ready for Pickup', 'Pending', AppColors.grey300, false),
-          _buildTimelineStep(Icons.check_circle_outline, 'Picked Up', 'Pending', AppColors.grey300, false),
+          _buildTimelineStep(Icons.check_circle, AppLocalizations.of(context)!.orderPlaced, '12:30 PM', AppColors.success, true),
+          _buildTimelineStep(Icons.hourglass_empty, AppLocalizations.of(context)!.preparing, 'In progress', AppColors.warning, true),
+          _buildTimelineStep(Icons.shopping_bag_outlined, AppLocalizations.of(context)!.readyForPickup, 'Pending', AppColors.grey300, false),
+          _buildTimelineStep(Icons.check_circle_outline, AppLocalizations.of(context)!.pickedUp, 'Pending', AppColors.grey300, false),
         ],
       ),
     );

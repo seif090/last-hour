@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/custom_button.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,26 +19,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
-  final _pages = const [
-    _OnboardingPage(
-      icon: Icons.food_bank_rounded,
-      title: 'Save Surplus Food',
-      subtitle: 'Discover delicious meals from local restaurants, bakeries, and supermarkets at discounted prices.',
-      color: AppColors.primary,
-    ),
-    _OnboardingPage(
-      icon: Icons.attach_money_rounded,
-      title: 'Amazing Discounts',
-      subtitle: 'Get up to 70% off on fresh food that would otherwise go to waste. Great for your wallet and the planet!',
-      color: AppColors.secondary,
-    ),
-    _OnboardingPage(
-      icon: Icons.eco_rounded,
-      title: 'Fight Food Waste',
-      subtitle: 'Join thousands of people saving food from going to waste. Every meal rescued makes a difference.',
-      color: AppColors.tertiary,
-    ),
-  ];
+  List<_OnboardingPage> _getPages(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _OnboardingPage(
+        icon: Icons.food_bank_rounded,
+        title: l10n.onboardingTitle1,
+        subtitle: l10n.onboardingSubtitle1,
+        color: AppColors.primary,
+      ),
+      _OnboardingPage(
+        icon: Icons.attach_money_rounded,
+        title: l10n.onboardingTitle2,
+        subtitle: l10n.onboardingSubtitle2,
+        color: AppColors.secondary,
+      ),
+      _OnboardingPage(
+        icon: Icons.eco_rounded,
+        title: l10n.onboardingTitle3,
+        subtitle: l10n.onboardingSubtitle3,
+        color: AppColors.tertiary,
+      ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -47,27 +51,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = _getPages(context);
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
-            _buildTopBar(),
+            _buildTopBar(pages),
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 onPageChanged: (index) => setState(() => _currentPage = index),
-                itemBuilder: (_, index) => _pages[index],
+                itemBuilder: (_, index) => pages[index],
               ),
             ),
-            _buildBottomSection(),
+            _buildBottomSection(pages),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(List<_OnboardingPage> pages) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
@@ -83,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           TextButton(
             onPressed: _completeOnboarding,
             child: Text(
-              _currentPage < _pages.length - 1 ? 'Skip' : '',
+              _currentPage < pages.length - 1 ? AppLocalizations.of(context)!.onboardingSkip : '',
               style: AppTextStyles.labelLarge.copyWith(color: AppColors.grey500),
             ),
           ),
@@ -92,7 +97,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomSection() {
+  Widget _buildBottomSection(List<_OnboardingPage> pages) {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -101,23 +106,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              _pages.length,
+              pages.length,
               (index) => _buildDot(index),
             ),
           ),
           const SizedBox(height: 32),
           CustomButton(
-            label: _currentPage == _pages.length - 1
-                ? 'Get Started'
-                : 'Next',
+            label: _currentPage == pages.length - 1
+                ? AppLocalizations.of(context)!.onboardingGetStarted
+                : AppLocalizations.of(context)!.onboardingNext,
             onPressed: _onNextPressed,
           ),
-          if (_currentPage < _pages.length - 1) ...[
+          if (_currentPage < pages.length - 1) ...[
             const SizedBox(height: 12),
             TextButton(
               onPressed: _completeOnboarding,
               child: Text(
-                'Get Started',
+                AppLocalizations.of(context)!.onboardingGetStarted,
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.grey500,
                 ),
@@ -144,7 +149,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _onNextPressed() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _getPages(context).length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,

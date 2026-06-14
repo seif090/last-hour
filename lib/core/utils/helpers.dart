@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/app_constants.dart';
@@ -44,12 +45,12 @@ class Helpers {
     return '${distance.toStringAsFixed(1)} ${AppConstants.distanceUnit}';
   }
 
-  static String formatRemainingTime(DateTime expiryTime) {
+  static String formatRemainingTime(DateTime expiryTime, BuildContext context) {
     final now = DateTime.now();
     final difference = expiryTime.difference(now);
 
     if (difference.isNegative) {
-      return 'Expired';
+      return AppLocalizations.of(context)!.expired;
     }
 
     if (difference.inHours > 0) {
@@ -122,24 +123,25 @@ class Helpers {
     Clipboard.setData(ClipboardData(text: text));
   }
 
-  static String getOrderStatusText(String status) {
+  static String getOrderStatusText(String status, BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     switch (status) {
       case AppConstants.orderPending:
-        return 'Pending';
+        return loc.statusPending;
       case AppConstants.orderConfirmed:
-        return 'Confirmed';
+        return loc.statusConfirmed;
       case AppConstants.orderPreparing:
-        return 'Preparing';
+        return loc.statusPreparing;
       case AppConstants.orderReady:
-        return 'Ready for Pickup';
+        return loc.statusReadyForPickup;
       case AppConstants.orderPickedUp:
-        return 'Picked Up';
+        return loc.statusPickedUp;
       case AppConstants.orderDelivered:
-        return 'Delivered';
+        return loc.statusDelivered;
       case AppConstants.orderCancelled:
-        return 'Cancelled';
+        return loc.statusCancelled;
       case AppConstants.orderRejected:
-        return 'Rejected';
+        return loc.statusRejected;
       default:
         return status;
     }

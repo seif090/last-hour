@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../providers/auth_provider.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../widgets/otp_input_field.dart';
 
 class VerifyOtpScreen extends ConsumerStatefulWidget {
@@ -57,14 +58,14 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Verify OTP',
-                style: theme.textTheme.headlineMedium?.copyWith(
+AppLocalizations.of(context)!.verifyOtpTitle,
+                  style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Enter the 6-digit code sent to $_email',
+                AppLocalizations.of(context)!.verifyOtpSubtitle(_email),
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: AppColors.grey500,
                 ),
@@ -76,7 +77,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
               ),
               const SizedBox(height: 32),
               CustomButton(
-                label: 'Verify',
+                label: AppLocalizations.of(context)!.verify,
                 onPressed: _otpController.text.length == 6 ? _verify : null,
                 isLoading: authState.isLoading,
               ),
@@ -95,7 +96,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Didn't receive the code? ",
+                    AppLocalizations.of(context)!.didntReceiveCode,
                     style: theme.textTheme.bodyMedium,
                   ),
                   GestureDetector(
@@ -103,7 +104,7 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
                       ref.read(authProvider.notifier).forgotPassword(_email);
                     },
                     child: Text(
-                      'Resend',
+                      AppLocalizations.of(context)!.resend,
                       style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,

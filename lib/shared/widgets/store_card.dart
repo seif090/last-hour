@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/helpers.dart';
@@ -138,9 +139,9 @@ class StoreCard extends StatelessWidget {
                 child: Container(
                   color: Colors.black.withAlpha(128),
                   child: Center(
-                    child: Text(
-                      'Closed',
-                      style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
+                      child: Text(
+                        AppLocalizations.of(context)!.closed,
+                        style: AppTextStyles.labelLarge.copyWith(color: Colors.white),
                     ),
                   ),
                 ),
@@ -155,7 +156,7 @@ class StoreCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  isOpen ? 'Open' : 'Closed',
+                  isOpen ? AppLocalizations.of(context)!.open : AppLocalizations.of(context)!.closed,
                   style: AppTextStyles.caption.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -220,7 +221,7 @@ class StoreCard extends StatelessWidget {
               const Icon(Icons.local_offer_outlined, size: 12, color: AppColors.primary),
               const SizedBox(width: 2),
               Text(
-                '$activeOffersCount offers',
+                AppLocalizations.of(context)!.offers(activeOffersCount),
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,

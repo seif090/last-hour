@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
@@ -221,31 +222,31 @@ class _MainShell extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) => navigationShell.goBranch(index),
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+            label: AppLocalizations.of(context)!.navHome,
           ),
           NavigationDestination(
             icon: Icon(Icons.map_outlined),
             selectedIcon: Icon(Icons.map_rounded),
-            label: 'Map',
+            label: AppLocalizations.of(context)!.navMap,
           ),
           NavigationDestination(
             icon: Icon(Icons.shopping_cart_outlined),
             selectedIcon: Icon(Icons.shopping_cart_rounded),
-            label: 'Cart',
+            label: AppLocalizations.of(context)!.navCart,
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
             selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'Orders',
+            label: AppLocalizations.of(context)!.navOrders,
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
+            label: AppLocalizations.of(context)!.navProfile,
           ),
         ],
       ),

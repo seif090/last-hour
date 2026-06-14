@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../stores/presentation/providers/store_providers.dart';
@@ -22,15 +23,15 @@ class MapScreen extends ConsumerWidget {
                 children: [
                   Container(
                     color: AppColors.grey200,
-                    child: const Center(
+                    child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.map_rounded, size: 80, color: AppColors.grey400),
-                          SizedBox(height: 16),
-                          Text('Map View', style: TextStyle(color: AppColors.grey500, fontSize: 18)),
-                          SizedBox(height: 8),
-                          Text('Google Maps will be integrated here',
+                          const Icon(Icons.map_rounded, size: 80, color: AppColors.grey400),
+                          const SizedBox(height: 16),
+                          Text(AppLocalizations.of(context)!.mapView, style: TextStyle(color: AppColors.grey500, fontSize: 18)),
+                          const SizedBox(height: 8),
+                          Text(AppLocalizations.of(context)!.mapPlaceholder,
                             style: TextStyle(color: AppColors.grey400, fontSize: 13)),
                         ],
                       ),
@@ -76,14 +77,14 @@ class MapScreen extends ConsumerWidget {
       child: Row(
         children: [
           Text(
-            'Nearby Stores',
+            AppLocalizations.of(context)!.nearbyStores,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const Spacer(),
           TextButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.tune_rounded, size: 18),
-            label: const Text('Filter'),
+            label: Text(AppLocalizations.of(context)!.filter),
           ),
         ],
       ),
@@ -102,7 +103,7 @@ class MapScreen extends ConsumerWidget {
       ),
       child: TextField(
         decoration: InputDecoration(
-          hintText: 'Search stores...',
+          hintText: AppLocalizations.of(context)!.searchStoresHint,
           hintStyle: TextStyle(color: AppColors.grey400, fontSize: 14),
           prefixIcon: Icon(Icons.search_rounded, color: AppColors.grey500, size: 22),
           border: InputBorder.none,
@@ -194,7 +195,7 @@ class MapScreen extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
-      error: (_, __) => const SizedBox(height: 120, child: Center(child: Text('Could not load stores'))),
+      error: (_, __) => SizedBox(height: 120, child: Center(child: Text(AppLocalizations.of(context)!.couldNotLoadStores))),
     );
   }
 }

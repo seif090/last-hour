@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -28,7 +29,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Checkout'),
+        title: Text(AppLocalizations.of(context)!.checkout),
         centerTitle: true,
       ),
       body: Column(
@@ -45,7 +46,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ],
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Center(child: Text('Could not load cart')),
+              error: (_, __) => Center(child: Text(AppLocalizations.of(context)!.couldNotLoadCart)),
             ),
           ),
         ],
@@ -55,7 +56,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildStepIndicator(ThemeData theme) {
-    final steps = ['Delivery', 'Payment', 'Review'];
+    final l10n = AppLocalizations.of(context)!;
+    final steps = [l10n.delivery, l10n.payment, l10n.review];
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -112,17 +114,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Delivery Mode', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.deliveryMode, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _buildModeCard('Pickup', Icons.store_rounded, _deliveryMode == 'pickup')),
+              Expanded(child: _buildModeCard(AppLocalizations.of(context)!.pickup, Icons.store_rounded, _deliveryMode == 'pickup')),
               const SizedBox(width: 12),
-              Expanded(child: _buildModeCard('Delivery', Icons.delivery_dining_rounded, _deliveryMode == 'delivery')),
+              Expanded(child: _buildModeCard(AppLocalizations.of(context)!.delivery, Icons.delivery_dining_rounded, _deliveryMode == 'delivery')),
             ],
           ),
           const SizedBox(height: 24),
-          Text('Delivery Address', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.deliveryAddress, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           _buildAddressCard(theme),
         ],
@@ -176,9 +178,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Home', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                Text(AppLocalizations.of(context)!.home, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text('123 Main Street, Downtown', style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
+                Text(AppLocalizations.of(context)!.defaultAddress, style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
               ],
             ),
           ),
@@ -189,16 +191,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildPaymentStep(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     final methods = [
-      {'name': 'Cash on Pickup', 'icon': Icons.money_rounded},
-      {'name': 'Credit Card', 'icon': Icons.credit_card_rounded},
-      {'name': 'PayPal', 'icon': Icons.paypal_rounded},
+      {'name': l10n.cashOnPickup, 'icon': Icons.money_rounded},
+      {'name': l10n.creditCard, 'icon': Icons.credit_card_rounded},
+      {'name': l10n.paypal, 'icon': Icons.paypal_rounded},
     ];
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Payment Method', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+        Text(l10n.paymentMethod, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
         ...methods.map((method) => Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -244,7 +247,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Order Summary', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.orderSummary, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 16),
           ...items.map((item) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -264,7 +267,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(item.title, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
-                      Text('Qty: ${item.quantity}', style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
+                      Text(AppLocalizations.of(context)!.qty(item.quantity), style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
                     ],
                   ),
                 ),
@@ -273,12 +276,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
           )),
           const Divider(height: 24),
-          _buildSummaryRow('Subtotal', '\$${total.toStringAsFixed(2)}'),
+          _buildSummaryRow(AppLocalizations.of(context)!.subtotal, '\$${total.toStringAsFixed(2)}'),
           const SizedBox(height: 8),
-          _buildSummaryRow('Service Fee', '\$${serviceFee.toStringAsFixed(2)}'),
-          _buildSummaryRow('Delivery', 'Free', highlight: true),
+          _buildSummaryRow(AppLocalizations.of(context)!.serviceFee, '\$${serviceFee.toStringAsFixed(2)}'),
+          _buildSummaryRow(AppLocalizations.of(context)!.delivery, AppLocalizations.of(context)!.deliveryFree, highlight: true),
           const Divider(height: 16),
-          _buildSummaryRow('Total', '\$${grandTotal.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow(AppLocalizations.of(context)!.total, '\$${grandTotal.toStringAsFixed(2)}', isTotal: true),
         ],
       ),
     );
@@ -325,19 +328,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Total', style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
+                Text(AppLocalizations.of(context)!.total, style: AppTextStyles.caption.copyWith(color: AppColors.grey500)),
                 Text('\$${(total + 1.99).toStringAsFixed(2)}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary)),
               ],
             ),
           ),
           if (_currentStep < 2)
             CustomButton(
-              label: 'Continue',
+              label: AppLocalizations.of(context)!.continueAction,
               onPressed: () => setState(() => _currentStep++),
             )
           else
             CustomButton(
-              label: 'Place Order',
+              label: AppLocalizations.of(context)!.placeOrder,
               onPressed: () {
                 context.go(RouteNames.orderConfirmation);
               },

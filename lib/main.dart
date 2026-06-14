@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +45,17 @@ class LastHourApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeMode.light,
           routerConfig: AppRouter.router,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('ar'),
+          ],
+          locale: const Locale('ar'),
         );
       },
     );

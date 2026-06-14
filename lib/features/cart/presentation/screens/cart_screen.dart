@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:last_hour/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routes/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -24,12 +25,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final theme = Theme.of(context);
     final cartAsync = ref.watch(cartItemsProvider);
     final total = ref.watch(cartTotalProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return cartAsync.when(
       data: (items) {
         if (items.isEmpty) {
           return Scaffold(
-            body: const EmptyStateWidget.cart(),
+            body: EmptyStateWidget.cart(title: l10n.cartEmptyTitle, subtitle: l10n.cartEmptySubtitle),
           );
         }
         return _buildCart(context, theme, items, total);
@@ -39,7 +41,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       error: (error, _) => Scaffold(
         body: ErrorWidgetView(
-          title: 'Could not load cart',
+          title: AppLocalizations.of(context)!.couldNotLoadCart,
           subtitle: error.toString(),
           onRetry: () => ref.invalidate(cartItemsProvider),
         ),
@@ -75,7 +77,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       child: Row(
         children: [
           Text(
-            'My Cart',
+            AppLocalizations.of(context)!.myCart,
             style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const Spacer(),
@@ -85,7 +87,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               ref.invalidate(cartItemsProvider);
             },
             icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            label: const Text('Clear'),
+            label: Text(AppLocalizations.of(context)!.clear),
             style: TextButton.styleFrom(foregroundColor: AppColors.discountRed),
           ),
         ],
@@ -169,11 +171,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       child: Column(
         children: [
-          _buildSummaryRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+          _buildSummaryRow(AppLocalizations.of(context)!.subtotal, '\$${subtotal.toStringAsFixed(2)}'),
           const SizedBox(height: 8),
-          _buildSummaryRow('Service Fee', '\$${serviceFee.toStringAsFixed(2)}'),
+          _buildSummaryRow(AppLocalizations.of(context)!.serviceFee, '\$${serviceFee.toStringAsFixed(2)}'),
           const Divider(height: 20),
-          _buildSummaryRow('Total', '\$${grandTotal.toStringAsFixed(2)}', isTotal: true),
+          _buildSummaryRow(AppLocalizations.of(context)!.total, '\$${grandTotal.toStringAsFixed(2)}', isTotal: true),
         ],
       ),
     );
@@ -205,7 +207,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return Container(
       padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 12),
       child: CustomButton(
-        label: 'Proceed to Checkout',
+        label: AppLocalizations.of(context)!.proceedToCheckout,
         onPressed: () => context.push(RouteNames.checkout),
       ),
     );
