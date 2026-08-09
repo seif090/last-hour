@@ -26,6 +26,9 @@ jobs:
       - name: Restore
         run: dotnet restore LastHour.Backend.sln
 
+      - name: Audit NuGet packages
+        run: dotnet list LastHour.Backend.sln package --vulnerable
+
       - name: Build
         run: dotnet build LastHour.Backend.sln --no-restore --configuration Release
 
@@ -52,3 +55,11 @@ jobs:
           name: api-publish
           path: publish
           if-no-files-found: error
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker image build
+        run: docker build -f docker/Dockerfile -t lasthour-api:ci .
