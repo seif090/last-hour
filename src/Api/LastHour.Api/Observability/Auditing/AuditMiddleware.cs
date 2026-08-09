@@ -23,7 +23,7 @@ public sealed class AuditMiddleware : IMiddleware
     public AuditMiddleware(IAuditLogger auditLogger, IOptions<AuditLoggingOptions> options)
     {
         _auditLogger = auditLogger ?? throw new ArgumentNullException(nameof(auditLogger));
-        _options = options.Value ?? throw new ArgumentNullException(nameof(options));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
     /// <summary>
