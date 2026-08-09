@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NetArchTest.eNhancedEdition" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
@@ -16,6 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      The API project is the composition root and references every building block and
+      module, so a single project reference copies every src assembly into the test
+      output for reflection-based scanning. The Architecture marker is kept explicit.
+    -->
+    <ProjectReference Include="..\..\..\src\Api\LastHour.Api\LastHour.Api.csproj" />
     <ProjectReference Include="..\..\..\src\BuildingBlocks\LastHour.BuildingBlocks.Architecture\LastHour.BuildingBlocks.Architecture.csproj" />
   </ItemGroup>
 

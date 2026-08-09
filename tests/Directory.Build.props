@@ -12,4 +12,13 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <!--
+    Shared test-stack package: every test project gets the fluent assertion library
+    via the central version table (Directory.Packages.props).
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" />
+  </ItemGroup>
+
 </Project>
