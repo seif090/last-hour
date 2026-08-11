@@ -16,15 +16,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Pinned to commit SHAs (immutable) with the matching tag in a comment.
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup .NET 9 (global.json)
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           global-json-file: global.json
+          # NuGet cache keyed on the committed packages.lock.json files.
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
 
-      - name: Restore
-        run: dotnet restore LastHour.Backend.sln
+      - name: Restore (locked mode)
+        # --locked-mode fails if the committed lock files drifted from the
+        # declared package graph, making restore fully deterministic.
+        run: dotnet restore LastHour.Backend.sln --locked-mode
 
       - name: Audit NuGet packages
         run: dotnet list LastHour.Backend.sln package --vulnerable
@@ -40,7 +47,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: test-results
           path: TestResults
@@ -50,7 +57,7 @@ jobs:
         run: dotnet publish src/Api/LastHour.Api/LastHour.Api.csproj --configuration Release --no-restore --output publish
 
       - name: Upload API artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: api-publish
           path: publish
@@ -59,7 +66,8 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Validate Docker image build
         run: docker build -f docker/Dockerfile -t lasthour-api:ci .
