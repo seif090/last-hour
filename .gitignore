@@ -27,6 +27,8 @@ x86/
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 *.lock.json
+# ...but commit the NuGet dependency graph for deterministic restore.
+!packages.lock.json
 
 ## Rider / ReSharper
 _ReSharper*/
@@ -62,5 +64,7 @@ docker-compose.override.yml
 .env.*
 !.env.example
 
-## AI context caches
+## AI tooling / local state (never commit)
 .ai/cache/
+.claude/
+.freebuff/

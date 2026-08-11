@@ -24,6 +24,13 @@
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
     <!--
+      Deterministic restore: every project commits a packages.lock.json (see
+      .gitignore) so the resolved package graph is reproducible. CI restores
+      with the locked mode switch and fails on any drift.
+    -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+
+    <!--
       Roslyn analyzers. The Microsoft.CodeAnalysis.NetAnalyzers rule set is
       shipped in-band with the .NET SDK and enabled via EnableNETAnalyzers;
       no separate PackageReference is required.
