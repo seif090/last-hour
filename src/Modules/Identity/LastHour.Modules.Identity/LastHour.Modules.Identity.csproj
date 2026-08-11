@@ -1,5 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    EF Core is referenced only for the module-owned entity configuration
+    (Persistence/UserConfiguration.cs); Relational provides the mapping extension methods
+    (ToTable, HasColumnName, HasIndex). No domain type in this module references EF Core;
+    the mapping is discovered by the shared DbContext through ApplyConfigurationsFromAssembly.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\BuildingBlocks\LastHour.BuildingBlocks.Application\LastHour.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\..\..\BuildingBlocks\LastHour.BuildingBlocks.Architecture\LastHour.BuildingBlocks.Architecture.csproj" />

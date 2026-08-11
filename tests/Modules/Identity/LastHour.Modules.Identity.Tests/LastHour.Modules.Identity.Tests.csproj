@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -16,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      Infrastructure is referenced only by the persistence tests, which need the shared
+      LastHourDbContext and its interceptors; the domain tests never touch it.
+    -->
+    <ProjectReference Include="..\..\..\..\src\BuildingBlocks\LastHour.BuildingBlocks.Infrastructure\LastHour.BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\src\Modules\Identity\LastHour.Modules.Identity\LastHour.Modules.Identity.csproj" />
   </ItemGroup>
 

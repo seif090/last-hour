@@ -41,7 +41,12 @@ public static class ApiServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        services.AddLastHourInfrastructure(configuration);
+        // Entity configuration assemblies: each module contributes its own assembly so the
+        // shared DbContext discovers its IEntityTypeConfiguration implementations. Modules
+        // with no entities yet are omitted; add them when they gain persistence.
+        services.AddLastHourInfrastructure(
+            configuration,
+            typeof(LastHour.Modules.Identity.Domain.Users.User).Assembly);
 
         services.AddControllers();
         services.AddEndpointsApiExplorer();
