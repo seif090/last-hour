@@ -15,7 +15,9 @@ COPY LastHour.Backend.sln ./
 COPY src/ src/
 COPY tests/ tests/
 
-RUN dotnet restore LastHour.Backend.sln
+# --locked-mode fails the build if committed packages.lock.json files drift,
+# keeping image restores deterministic.
+RUN dotnet restore LastHour.Backend.sln --locked-mode
 
 RUN dotnet publish src/Api/LastHour.Api/LastHour.Api.csproj \
     --configuration Release \
