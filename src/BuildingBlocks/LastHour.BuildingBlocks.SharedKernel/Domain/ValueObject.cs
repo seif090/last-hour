@@ -26,12 +26,16 @@ public abstract class ValueObject : IEquatable<ValueObject>
     public override bool Equals(object? obj) => obj is ValueObject other && Equals(other);
 
     /// <inheritdoc/>
-    public bool Equals(ValueObject? other) => other is not null && ValuesEqual(other);
+    public bool Equals(ValueObject? other)
+        => other is not null
+           && other.GetType() == GetType()
+           && ValuesEqual(other);
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
         HashCode hash = default(HashCode);
+        hash.Add(GetType());
         foreach (object component in GetEqualityComponents())
         {
             hash.Add(component);
