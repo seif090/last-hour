@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace LastHour.Api.RateLimiting;
 
@@ -33,7 +34,10 @@ public static class RateLimitingServiceCollectionExtensions
         RateLimitSettings settings =
             configuration.GetSection(RateLimitSettings.SectionName).Get<RateLimitSettings>() ?? new RateLimitSettings();
 
-        services.Configure<RateLimitSettings>(configuration.GetSection(RateLimitSettings.SectionName));
+        services.AddOptions<RateLimitSettings>()
+            .Bind(configuration.GetSection(RateLimitSettings.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<RateLimitSettings>, RateLimitSettingsValidator>();
 
         if (settings.Enabled)
         {

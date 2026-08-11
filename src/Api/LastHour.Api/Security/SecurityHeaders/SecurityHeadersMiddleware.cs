@@ -80,8 +80,9 @@ public sealed class SecurityHeadersMiddleware : IMiddleware
 
     private static string BuildHstsValue(HstsOptions hsts)
     {
+        // HSTS max-age is expressed in seconds; the option is configured in days for readability.
         var builder = new StringBuilder("max-age=")
-            .Append(hsts.MaxAgeDays);
+            .Append(hsts.MaxAgeDays * 86_400);
 
         if (hsts.IncludeSubDomains)
         {
