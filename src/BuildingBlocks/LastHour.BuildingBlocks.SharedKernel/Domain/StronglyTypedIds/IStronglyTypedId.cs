@@ -1,4 +1,4 @@
-namespace LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
+namespace LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 /// <summary>
 /// Defines the contract implemented by every strongly typed identifier, exposing the

@@ -1,7 +1,7 @@
 using LastHour.BuildingBlocks.Infrastructure.Persistence;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Repositories;
-using LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
 using LastHour.BuildingBlocks.Infrastructure.Tests.Persistence.TestSupport;
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 namespace LastHour.BuildingBlocks.Infrastructure.Tests.Persistence;
 

@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
 using LastHour.BuildingBlocks.SharedKernel.Domain;
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

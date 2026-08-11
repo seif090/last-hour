@@ -1,3 +1,5 @@
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
+
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;

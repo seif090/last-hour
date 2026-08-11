@@ -1,7 +1,7 @@
 using System.Text.Json;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Outbox;
-using LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
 using LastHour.BuildingBlocks.Infrastructure.Tests.Persistence.TestSupport;
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 namespace LastHour.BuildingBlocks.Infrastructure.Tests.Persistence.Outbox;
 

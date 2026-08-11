@@ -1,6 +1,6 @@
 using LastHour.BuildingBlocks.Infrastructure.Events;
-using LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
 using LastHour.BuildingBlocks.Infrastructure.Tests.Persistence.TestSupport;
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 

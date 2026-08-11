@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using LastHour.BuildingBlocks.Infrastructure.Events;
-using LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
 using LastHour.BuildingBlocks.SharedKernel.Domain;
 using LastHour.BuildingBlocks.SharedKernel.Domain.Events;
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

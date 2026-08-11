@@ -1,4 +1,4 @@
-namespace LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
+namespace LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 /// <summary>
 /// A strongly typed identifier wrapping an <see cref="int"/>. Suitable for identifiers

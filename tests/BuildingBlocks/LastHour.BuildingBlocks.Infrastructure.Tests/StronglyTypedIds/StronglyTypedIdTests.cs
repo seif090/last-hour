@@ -1,4 +1,4 @@
-using LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 namespace LastHour.BuildingBlocks.Infrastructure.Tests.StronglyTypedIds;
 

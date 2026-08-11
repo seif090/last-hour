@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
+
 namespace LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
 
 /// <summary>

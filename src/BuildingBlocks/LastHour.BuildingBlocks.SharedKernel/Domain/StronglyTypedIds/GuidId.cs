@@ -1,4 +1,4 @@
-namespace LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
+namespace LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 /// <summary>
 /// A strongly typed identifier wrapping a <see cref="Guid"/>. Suitable as the default

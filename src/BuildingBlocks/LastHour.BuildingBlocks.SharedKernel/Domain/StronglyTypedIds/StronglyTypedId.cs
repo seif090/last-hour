@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
-namespace LastHour.BuildingBlocks.Infrastructure.StronglyTypedIds;
+namespace LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
 
 /// <summary>
 /// Provides the shared behavior of a strongly typed identifier: an immutable wrapper
