@@ -10,7 +10,7 @@ them per the checklist at the end.
 |-------|-----------|
 | Authentication boundary | Not yet implemented (Epic 01). The `ICurrentUser` abstraction isolates the host from authentication; the API currently runs with an anonymous/default principal in non-request contexts. |
 | Authorization | Out of scope until identity lands; the audit middleware already records rejected access attempts. |
-| Rate limiting | Fixed/sliding window, token bucket, concurrency, or no-limit per policy; default global policy is a 120/min fixed window with `PartitionBy=Global` and no queuing (bursts are rejected with 429, not buffered). |
+| Rate limiting | Fixed/sliding window, token bucket, concurrency, or no-limit per policy; default global policy is a 120/min fixed window with `PartitionBy=Global` and no queuing (bursts are rejected with 429, not buffered). Policy configuration is validated at startup (unique names, per-algorithm limits, header-name requirement). |
 | Request limits | Kestrel-level limits: max request body 10 MiB, multipart 128 MiB, header timeout 30s, keep-alive 2m10s, minimum data-rate enforcement to slow-loris. |
 | CORS | Off by configuration risk: `AllowAnyOrigin=false`, `AllowCredentials=false`, explicit `AllowedOrigins` required. |
 | Security headers | `SecurityHeadersMiddleware` applies the configured headers on every response. |

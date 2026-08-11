@@ -59,6 +59,15 @@ asynchronously by the `OutboxProcessor` hosted service.
 - `OutboxProcessor.StartAsync` checks `Outbox:Enabled` first; the dispatcher
   publishes through MediatR.
 
+### Migrations
+
+`Persistence/Migrations/` holds the EF Core migrations for the infrastructure
+schema: the baseline migration `20260811023325_InitialInfrastructure` creates
+the `outbox_messages` and `seeding_history` tables. `dotnet-ef` 9.0.18 is
+pinned as a local tool (`.config/dotnet-tools.json`). Migrations are applied by
+`DatabaseInitializer` in Development only; production applies them through the
+release process. See `docs/database.md`.
+
 ### Seeding
 
 `Persistence/Seeding/` runs idempotently at startup:

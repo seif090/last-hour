@@ -27,18 +27,20 @@ Collect coverage per test run with the built-in collector:
 dotnet test LastHour.Backend.sln -c Release --collect:"XPlat Code Coverage"
 ```
 
-Coverage baselines (instrumented line coverage, union across test projects):
+Coverage baselines (instrumented line coverage, union across test projects,
+measured with the XPlat collector):
 
 | Assembly | Baseline |
 |----------|----------|
-| `LastHour.BuildingBlocks.SharedKernel` | ~91% |
-| `LastHour.BuildingBlocks.Api` | ~92% |
-| `LastHour.BuildingBlocks.Infrastructure` | ~94% |
+| `LastHour.BuildingBlocks.SharedKernel` | ~90% |
+| `LastHour.Api` | ~90% |
+| `LastHour.BuildingBlocks.Infrastructure` | ~84% |
 
-Uncovered paths are tracked as deliberate exceptions rather than enforced
-thresholds; see the sprint report for the known uncovered items
-(`DesignTimeDbContextFactory`, EF-tooling glue, and infrastructure that requires
-an external database).
+These are informational baselines, not enforced thresholds. The uncovered
+Infrastructure paths are deliberate exceptions: the EF migrations
+(`src/.../Infrastructure/Migrations/`), the design-time factory, and other
+infrastructure that requires an external database (`DesignTimeDbContextFactory`,
+EF-tooling glue) are not exercised by unit tests.
 
 ## Project layout
 
@@ -55,6 +57,27 @@ Empty module test projects exist so every module gets coverage infrastructure
 when its first behavior lands. Do not delete them; do not invent tests for
 interfaces-only or empty projects (`Contracts` has no production code and is
 covered by design).
+
+## Parallelization
+
+xUnit runs test collections in parallel by default. The API tests share one
+`LastHourApiFactory` per collection, so the endpoint tests live in the
+`ApiEndpoints` collection and execute serially; everything else (unit,
+persistence, architecture) runs in parallel across collections. In-memory
+SQLite/EF contexts are created per test, so parallel runs never share database
+state. Do not introduce global mutable test state; if a static sink is
+unavoidable (for example `TestSink` for outbox handler assertions), make it
+concurrency-safe and reset it at the start of each test.
+
+## Database reset
+
+Persistence tests never touch a real database. The in-memory provider gives
+fresh per-test state automatically; relational-transaction tests use a
+SQLite in-memory connection created per test via
+`TestPersistence.CreateSqliteContext` (opened before the test, disposed after),
+so each test starts from an empty schema. No reset mechanism (drop/recreate,
+Respawn, container-per-suite) is needed because no test shares a persistent
+store — keep it that way.
 
 ## Conventions
 

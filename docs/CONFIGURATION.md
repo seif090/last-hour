@@ -9,7 +9,9 @@ source described below).
 
 Options are bound from configuration and validated with
 `ValidateOnStart`; a misconfigured value fails the process at startup instead
-of surfacing as a runtime error.
+of surfacing as a runtime error. This includes `RateLimiting`, whose policies
+must be uniquely named with algorithm-appropriate limits, a rejection status
+in the 400-599 range, and a header name when partitioning by header.
 
 | Section | Purpose | Key settings |
 |---------|---------|--------------|
@@ -26,6 +28,7 @@ of surfacing as a runtime error.
 | `AuditLogging` | Security audit trail | `Enabled`, `FilePath`, `RetainedFileCount` |
 | `OutputCache` | Response caching | `Enabled`, `UseCaseSensitivePaths`, `Profiles` |
 | `RateLimiting` | API rate limiting | `Enabled`, `RejectionStatusCode`, `GlobalPolicyName`, `Policies` |
+| `OpenTelemetry` | Traces and metrics | `Enabled`, `TracingEnabled`, `MetricsEnabled`, `ConsoleExporterEnabled` (local debugging), `UseOtlpExporter` + `OtlpEndpoint` (collector), `ServiceName`, `ServiceVersion` |
 | `Serilog` | Logging pipeline | `MinimumLevel`, `Enrich`, `WriteTo` (console, rolling file, optional Seq) |
 
 ## Secrets

@@ -100,17 +100,20 @@ Verification toolchain: `dotnet restore`, `dotnet build`, `dotnet test`,
 
 ## 6. Tech debt / deferred work
 
-- **`packages.lock.json`** not enabled yet — deterministic restore is a
-  follow-up (would add a lock file per project).
-- **Docker image build** not executed in this pass (Docker daemon was not
-  running); the Dockerfile follows standard, conservative patterns.
+> Resolved in Sprint 0.2: `packages.lock.json` is now committed per project
+> (`RestorePackagesWithLockFile` in `Directory.Build.props`), CI restores with
+> `--locked-mode`, NuGet caching is keyed on the lock files, GitHub Actions are
+> pinned to commit SHAs, and Dependabot watches NuGet + Actions updates.
+> Docker image build is validated by the CI `docker-build` job.
+
+- **Docker image build** not executed in the original pass (Docker daemon was
+  not running); the Dockerfile follows standard, conservative patterns and is
+  now validated in CI on every push/PR.
 - **Seq credentials** (`SEQ_PASSWORD_HASH`, `SEQ_API_KEY`) are operator
   supplied; the compose health check assumes the Seq `/health` endpoint.
 - **Health checks are not yet meaningful** — no DB/Redis adapters exist, so
   `/health/ready` has an empty check set. Modules will register checks as
   infrastructure lands.
-- **CI NuGet caching** (`actions/setup-dotnet cache: true`) deferred until
-  lock files exist.
 - **SDK 10.0.x** is installed locally but `global.json` deliberately stays on
   9.0.x until the upgrade is planned.
 - **ArchUnit-style tests** (enforcing the reference graph) are the first

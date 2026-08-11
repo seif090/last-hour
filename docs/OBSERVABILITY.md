@@ -7,9 +7,9 @@ telemetry, and health.
 
 Configured in `Serilog` (`appsettings.json`):
 
-- **Sinks**: console (development), rolling file
-  `logs/last-hour-.log` (compact JSON, daily roll, 14 retained), optional Seq
-  when configured through the environment.
+- **Sinks**: console (all environments — required for `docker logs`),
+  rolling file `logs/last-hour-.log` (compact JSON, daily roll, 14
+  retained), optional Seq when configured through the environment.
 - **Enrichment**: `FromLogContext`, machine name, environment, process id,
   thread id.
 - **Levels**: `Information` default; `Microsoft`/`Microsoft.AspNetCore`

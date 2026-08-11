@@ -27,15 +27,16 @@ The boundaries are enforced by tests, not by convention.
 
 Dependency direction (enforced in `tests/.../Architecture.Tests`):
 
-- `SharedKernel` — zero project references.
+- `Architecture` — zero project references (marker for dependency rules).
+- `SharedKernel` — references `Architecture` only.
 - `Application` — references `Architecture` + `SharedKernel`.
 - `Infrastructure`, `Contracts` — reference `Application` + `Architecture`
   + `SharedKernel`.
 - Modules — reference `Application` + `Architecture` + `SharedKernel`
   + `Contracts`.
-- `Api` — references everything except `SharedKernel`'s lower layers are
-  reached transitively; it is the only project allowed to reference
-  Infrastructure and modules.
+- `Api` — references every building block and every module; it is the only
+  project allowed to reference Infrastructure and modules (composition
+  root).
 
 No layer below the API may reference `Microsoft.EntityFrameworkCore`, `Npgsql`,
 or `StackExchange.Redis`; the API itself contains no direct persistence code

@@ -56,8 +56,9 @@ dotnet format --verify-no-changes
 The solution targets `net9.0` (pinned via `global.json`), treats warnings as
 errors, enables nullable reference types, runs the latest-recommended .NET
 analyzers plus StyleCop (src projects), enforces code style at build, and
-centralizes package versions (`Directory.Packages.props`). See
-`docs/ARCHITECTURE_AUDIT.md` for the full audit.
+centralizes package versions (`Directory.Packages.props`). Restore is
+deterministic: every project commits a `packages.lock.json` and CI restores
+with `--locked-mode`. See `docs/ARCHITECTURE_AUDIT.md` for the full audit.
 
 ## API surface
 
@@ -67,10 +68,25 @@ centralizes package versions (`Directory.Packages.props`). See
 | `GET /health` | All health checks |
 | `GET /health/live` | Liveness (process is up) |
 | `GET /health/ready` | Readiness (dependencies reachable) |
-| `GET /openapi/v1.json` | OpenAPI document (Development) |
+| `GET /swagger/v1/swagger.json` | OpenAPI document (Development only) |
+
+See `docs/api.md` for the full API conventions: versioning, response
+contract, ProblemDetails, rate limiting, correlation IDs and health.
 
 Logging is Serilog (structured) with Console + rolling File sinks; a Seq sink
 can be enabled via environment overrides in `docker/docker-compose.yml`.
+
+## Container image
+
+Build the production image from the repository root (non-root `app` user,
+port 8080):
+
+```powershell
+docker build -f docker\Dockerfile -t lasthour-api .
+```
+
+The image restore runs in `--locked-mode`; a stale `packages.lock.json` fails
+the build. CI validates the image on every push/PR.
 
 ## Local stack (Docker)
 
