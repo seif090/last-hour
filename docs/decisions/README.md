@@ -20,3 +20,7 @@ short and linked from the code it describes where practical.
 | [ADR-011](ADR-011-api-contracts-errors.md) | Minimal endpoints, URL versioning, Result → ProblemDetails |
 | [ADR-012](ADR-012-security-by-default.md) | Security by default with configuration-driven hardening |
 | [ADR-013](ADR-013-observability.md) | Observability — Serilog, OpenTelemetry, single correlation id |
+| [ADR-014](ADR-014-password-hashing-argon2id.md) | Argon2id password hashing with self-describing PHC hashes |
+| [ADR-015](ADR-015-jwt-access-tokens.md) | JWT access tokens for authentication |
+| [ADR-016](ADR-016-refresh-token-rotation.md) | Refresh-token rotation with family-based reuse detection |
+| [ADR-017](ADR-017-account-lockout-password-change.md) | Failed-attempt lockout and password-change session revocation |
