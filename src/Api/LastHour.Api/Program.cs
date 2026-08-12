@@ -45,6 +45,8 @@ try
     app.UseLastHourRequestLogging();
     app.UseLastHourAuditLogging();
     app.UseRouting();
+    app.UseAuthentication();
+    app.UseAuthorization();
     app.UseLastHourRateLimiting();
     app.UseLastHourOutputCache();
 
