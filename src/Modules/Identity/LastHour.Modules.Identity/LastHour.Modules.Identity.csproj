@@ -7,8 +7,21 @@
     the mapping is discovered by the shared DbContext through ApplyConfigurationsFromAssembly.
   -->
   <ItemGroup>
+    <!--
+      Microsoft.Extensions.* packages support the module's application services: options
+      binding and startup validation for the password policy, and the DI extension.
+      FluentValidation powers the registration command validator, consumed by the shared
+      validation pipeline behavior; logging is used for safe registration events.
+    -->
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
   <ItemGroup>

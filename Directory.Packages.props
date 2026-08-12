@@ -9,6 +9,7 @@
     <!-- ASP.NET Core -->
     <PackageVersion Include="Asp.Versioning.Http" Version="8.1.1" />
     <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.18" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.18" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <!-- Data / persistence -->
@@ -27,6 +28,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0" />
@@ -50,8 +52,12 @@
     <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
     <!-- Validation -->
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <!-- Static analysis -->
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />
+    <!-- Security / password hashing -->
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.19.2" />
+    <PackageVersion Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
     <!-- Testing -->
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="FluentAssertions" Version="8.10.0" />

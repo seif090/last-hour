@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using LastHour.BuildingBlocks.SharedKernel.Domain;
 
 namespace LastHour.BuildingBlocks.Application.Contracts;
@@ -28,11 +29,35 @@ public interface IReadRepository<TEntity, TId>
     Task<IReadOnlyList<TEntity>> ListAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves all entities matching <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="predicate">The condition an entity must satisfy.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>A read-only list of the matching entities.</returns>
+    Task<IReadOnlyList<TEntity>> ListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Determines whether any entity of the type exists.
     /// </summary>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns><see langword="true"/> when at least one entity exists; otherwise <see langword="false"/>.</returns>
     Task<bool> AnyAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines whether any entity matching <paramref name="predicate"/> exists.
+    /// </summary>
+    /// <param name="predicate">The condition an entity must satisfy.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns><see langword="true"/> when at least one matching entity exists; otherwise <see langword="false"/>.</returns>
+    Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the first entity matching <paramref name="predicate"/>, or <see langword="null"/> when none exists.
+    /// </summary>
+    /// <param name="predicate">The condition an entity must satisfy.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>The first matching entity, or <see langword="null"/> when none exists.</returns>
+    Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Determines whether an entity with the specified identifier exists.

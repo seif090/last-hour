@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using LastHour.BuildingBlocks.Application.Contracts;
 using LastHour.BuildingBlocks.SharedKernel.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -35,8 +36,20 @@ public sealed class EfReadRepository<TEntity, TId> : IReadRepository<TEntity, TI
         => await _dbSet.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyList<TEntity>> ListAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _dbSet.AsNoTracking().Where(predicate).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc/>
     public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
         => _dbSet.AsNoTracking().AnyAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        => _dbSet.AsNoTracking().AnyAsync(predicate, cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<TEntity?> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        => _dbSet.AsNoTracking().FirstOrDefaultAsync(predicate, cancellationToken);
 
     /// <inheritdoc/>
     public Task<bool> ExistsAsync(TId id, CancellationToken cancellationToken = default)

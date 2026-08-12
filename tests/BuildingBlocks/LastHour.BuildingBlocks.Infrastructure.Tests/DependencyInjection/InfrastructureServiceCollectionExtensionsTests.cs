@@ -1,6 +1,8 @@
+using LastHour.BuildingBlocks.Application.Contracts;
 using LastHour.BuildingBlocks.Infrastructure.DependencyInjection;
 using LastHour.BuildingBlocks.Infrastructure.Persistence;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Outbox;
+using LastHour.BuildingBlocks.Infrastructure.Security;
 using LastHour.BuildingBlocks.Infrastructure.Tests.Persistence.TestSupport;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -80,6 +82,43 @@ public class InfrastructureServiceCollectionExtensionsTests
         Assert.Equal(
             3,
             options.Extensions.OfType<CoreOptionsExtension>().Single().Interceptors?.Count() ?? 0);
+    }
+
+    [Fact]
+    public void AddLastHourInfrastructure_RegistersArgon2PasswordHasher()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Postgres:ConnectionString"] = "Host=localhost;Database=last_hour",
+            })
+            .Build();
+
+        using ServiceProvider provider = BuildProvider(configuration);
+
+        IPasswordHasher hasher = provider.GetRequiredService<IPasswordHasher>();
+
+        Assert.IsType<Argon2PasswordHasher>(hasher);
+    }
+
+    [Fact]
+    public void AddLastHourInfrastructure_RegistersJwtAccessTokenGenerator()
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Postgres:ConnectionString"] = "Host=localhost;Database=last_hour",
+                ["Jwt:Issuer"] = "https://lasthour.test",
+                ["Jwt:Audience"] = "lasthour-test",
+                ["Jwt:SigningKey"] = "0123456789abcdef0123456789abcdef0123456789abcdef",
+            })
+            .Build();
+
+        using ServiceProvider provider = BuildProvider(configuration);
+
+        IAccessTokenGenerator generator = provider.GetRequiredService<IAccessTokenGenerator>();
+
+        Assert.IsType<JwtAccessTokenGenerator>(generator);
     }
 
     [Fact]

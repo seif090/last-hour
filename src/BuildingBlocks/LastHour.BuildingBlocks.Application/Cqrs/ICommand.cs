@@ -10,6 +10,6 @@ namespace LastHour.BuildingBlocks.Application.Cqrs;
 /// Derives from MediatR's <see cref="IRequest{TResponse}"/> so commands can be dispatched
 /// through the MediatR pipeline.
 /// </summary>
-public interface ICommand : IRequest<Result>
+public interface ICommand : ICommandBase, IRequest<Result>
 {
 }

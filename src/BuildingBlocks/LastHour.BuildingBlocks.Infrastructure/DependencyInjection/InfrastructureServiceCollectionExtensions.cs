@@ -9,6 +9,7 @@ using LastHour.BuildingBlocks.Infrastructure.Persistence.Outbox;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Repositories;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Seeding;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.UnitOfWork;
+using LastHour.BuildingBlocks.Infrastructure.Security;
 using LastHour.BuildingBlocks.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -92,6 +93,16 @@ public static class InfrastructureServiceCollectionExtensions
 
         services.AddOptions<DatabaseInitializerOptions>()
             .Bind(configuration.GetSection(DatabaseInitializerOptions.SectionName));
+
+        services.AddOptions<PasswordHashingOptions>()
+            .Bind(configuration.GetSection(PasswordHashingOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<PasswordHashingOptions>, PasswordHashingOptionsValidator>();
+
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<JwtOptions>, JwtOptionsValidator>();
     }
 
     private static void RegisterPersistence(IServiceCollection services)
@@ -108,6 +119,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IReadRepository<,>), typeof(EfReadRepository<,>));
+        services.AddScoped(typeof(ITrackedRepository<,>), typeof(EfTrackedRepository<,>));
 
         services.AddScoped<SeederExecutor>();
     }
@@ -139,6 +151,8 @@ public static class InfrastructureServiceCollectionExtensions
     {
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+        services.AddSingleton<IPasswordHasher, Argon2PasswordHasher>();
+        services.AddSingleton<IAccessTokenGenerator, JwtAccessTokenGenerator>();
         services.AddScoped<ICurrentUser, DefaultCurrentUser>();
         services.AddScoped<ICurrentTenant, DefaultCurrentTenant>();
 
