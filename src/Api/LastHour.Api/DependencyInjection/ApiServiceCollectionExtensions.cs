@@ -9,11 +9,13 @@ using LastHour.Api.ProblemDetails;
 using LastHour.Api.RateLimiting;
 using LastHour.Api.RequestLimits;
 using LastHour.Api.Secrets;
+using LastHour.Api.Security.Authentication;
 using LastHour.Api.Security.Cors;
 using LastHour.Api.Security.ForwardedHeaders;
 using LastHour.Api.Security.SecurityHeaders;
 using LastHour.Api.Versioning;
 using LastHour.BuildingBlocks.Infrastructure.DependencyInjection;
+using LastHour.Modules.Identity.DependencyInjection;
 
 namespace LastHour.Api.DependencyInjection;
 
@@ -47,11 +49,14 @@ public static class ApiServiceCollectionExtensions
         services.AddLastHourInfrastructure(
             configuration,
             typeof(LastHour.Modules.Identity.Domain.Users.User).Assembly);
+        services.AddLastHourIdentity(configuration);
 
         services.AddControllers();
         services.AddEndpointsApiExplorer();
 
-        services.AddCqrs();
+        services.AddCqrs(
+            null,
+            typeof(LastHour.Modules.Identity.Application.Commands.RegisterUserCommand).Assembly);
         services.AddPerformanceBehaviorOptions(configuration);
 
         services.AddLastHourApiVersioning();
@@ -65,6 +70,7 @@ public static class ApiServiceCollectionExtensions
         services.AddLastHourAuditLogging(configuration);
         services.AddLastHourOpenTelemetry(configuration);
         services.AddLastHourSecurityHeaders(configuration);
+        services.AddLastHourAuthentication();
         services.AddLastHourCors(configuration);
         services.AddLastHourForwardedHeaders(configuration);
         services.AddLastHourSecrets(configuration);

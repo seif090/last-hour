@@ -60,6 +60,31 @@ public sealed class ProblemDetailsExceptionHandler : IExceptionHandler
             ? id
             : string.Empty;
 
+        if (exception is BadHttpRequestException badRequest)
+        {
+            // Malformed requests (for example an unparseable JSON body) are client errors, not
+            // server failures; they are answered with their own status code and sanitized body.
+            UnhandledException(_logger, httpContext.Request.Path, correlationId, exception);
+
+            var badRequestProblem = new ProblemDetails
+            {
+                Status = badRequest.StatusCode,
+                Title = ErrorToProblemDetailsMapper.TitleFor(ErrorType.Validation),
+                Type = ErrorToProblemDetailsMapper.TypeUriFor(ErrorType.Validation),
+                Detail = _environment.IsDevelopment()
+                    ? ConnectionStringRedactor.Redact(exception.Message)
+                    : "The request is malformed and could not be processed.",
+            };
+            badRequestProblem.Extensions["code"] = "BadRequest";
+            badRequestProblem.Extensions["correlationId"] = correlationId;
+
+            httpContext.Response.StatusCode = badRequest.StatusCode;
+
+            await httpContext.Response.WriteAsJsonAsync(badRequestProblem, options: null, contentType: "application/problem+json", cancellationToken);
+
+            return true;
+        }
+
         UnhandledException(_logger, httpContext.Request.Path, correlationId, exception);
 
         var problemDetails = new ProblemDetails

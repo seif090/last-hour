@@ -1,4 +1,6 @@
+using LastHour.Api.Endpoints.Authentication;
 using LastHour.Api.Endpoints.ProblemDetails;
+using LastHour.Api.Endpoints.Registration;
 using LastHour.Api.Endpoints.System;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
@@ -23,6 +25,8 @@ public static class EndpointExtensions
 
         app.MapSystemEndpoints();
         app.MapProblemDetailsEndpoints();
+        app.MapRegistrationEndpoints();
+        app.MapAuthEndpoints();
         app.MapControllers();
         app.MapHealthChecks("/health").DisableRateLimiting();
         app.MapHealthChecks(
