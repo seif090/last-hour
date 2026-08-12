@@ -6,10 +6,11 @@ namespace LastHour.Modules.Identity.Domain.Users;
 /// <summary>
 /// The identity aggregate root of the LastHour platform. It protects the invariants of a
 /// user account: a valid, normalized email address, a controlled account status lifecycle, an
-/// immutable identifier, and a password credential that exists only as an opaque hash. The
-/// aggregate deliberately contains no authentication behavior (hashing, sign-in, tokens) —
-/// those belong to future sprints; this type only guarantees that identity state stays
-/// consistent.
+/// immutable identifier, a password credential that exists only as an opaque hash, and the
+/// temporary authentication throttle (failed-attempt counter and lockout window) that guards
+/// the credential. The aggregate deliberately contains no authentication behavior (hashing,
+/// sign-in, token issuance) — those belong to the application layer; this type only guarantees
+/// that identity and security state stays consistent.
 /// </summary>
 public sealed class User : AggregateRoot<UserId>, IAuditableEntity
 {
@@ -49,6 +50,30 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     /// <c>DbUpdateConcurrencyException</c>. The aggregate is the only writer of this value.
     /// </summary>
     public long Version { get; private set; }
+
+    /// <summary>
+    /// Gets the number of consecutive failed authentication attempts since the last successful
+    /// authentication (or lockout expiry). Reset by <see cref="RecordSuccessfulLogin"/> and
+    /// <see cref="MarkPasswordChanged"/>. Authentication behavior — not account status — owns
+    /// this value: it is temporary throttling state, never a permanent lifecycle property.
+    /// </summary>
+    public int FailedAccessCount { get; private set; }
+
+    /// <summary>
+    /// Gets the moment a temporary authentication lockout ends, in UTC, or <see langword="null"/>
+    /// while the account is not locked. A locked account cannot authenticate even with the
+    /// correct password. This is deliberately separate from <see cref="AccountStatus"/>: the
+    /// status models permanent or semi-permanent lifecycle state, lockout is a time-boxed
+    /// throttle that resets on success or expiry.
+    /// </summary>
+    public DateTime? LockoutUntilUtc { get; private set; }
+
+    /// <summary>
+    /// Gets the moment the password was last changed, in UTC, or <see langword="null"/> when the
+    /// credential has never been replaced since creation. Recorded for security auditing and to
+    /// anchor the session-invalidation window after a password change.
+    /// </summary>
+    public DateTime? LastPasswordChangedAtUtc { get; private set; }
 
     /// <inheritdoc/>
     public DateTime CreatedAt { get; set; }
@@ -148,7 +173,7 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
 
     /// <summary>
     /// Establishes or replaces the password credential. Only the opaque hash representation is
-    /// accepted; hashing is performed outside the aggregate by the future authentication flow.
+    /// accepted; hashing is performed outside the aggregate by the credential service.
     /// </summary>
     /// <param name="credential">The credential to store.</param>
     /// <exception cref="ArgumentNullException"><paramref name="credential"/> is <see langword="null"/>.</exception>
@@ -156,6 +181,76 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     {
         ArgumentNullException.ThrowIfNull(credential);
         PasswordCredential = credential;
+        BumpVersion();
+    }
+
+    /// <summary>
+    /// Determines whether the account is currently locked out.
+    /// </summary>
+    /// <param name="utcNow">The current instant, in UTC.</param>
+    /// <returns><see langword="true"/> when a lockout is active (not yet expired).</returns>
+    public bool IsLockedOut(DateTime utcNow)
+        => LockoutUntilUtc is DateTime lockoutUntil && lockoutUntil > utcNow;
+
+    /// <summary>
+    /// Records a failed authentication attempt and applies the lockout policy. A lockout that
+    /// has already expired is treated as finished: the count starts fresh from this attempt. An
+    /// active lockout is left untouched (a locked account rejects further attempts without
+    /// incrementing). When the count reaches <paramref name="maxFailedAttempts"/> the account
+    /// becomes locked until <paramref name="utcNow"/> plus <paramref name="lockoutDuration"/>.
+    /// </summary>
+    /// <param name="utcNow">The current instant, in UTC.</param>
+    /// <param name="maxFailedAttempts">The number of consecutive failures that triggers a lockout.</param>
+    /// <param name="lockoutDuration">How long the lockout lasts.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxFailedAttempts"/> is less than one.</exception>
+    public void RecordFailedLogin(DateTime utcNow, int maxFailedAttempts, TimeSpan lockoutDuration)
+    {
+        if (maxFailedAttempts < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxFailedAttempts), "At least one failed attempt is required to trigger a lockout.");
+        }
+
+        if (LockoutUntilUtc is DateTime lockoutUntil && lockoutUntil <= utcNow)
+        {
+            // The previous lockout expired: start the counting window fresh.
+            FailedAccessCount = 0;
+            LockoutUntilUtc = null;
+        }
+
+        FailedAccessCount++;
+        if (FailedAccessCount >= maxFailedAttempts)
+        {
+            LockoutUntilUtc = utcNow.Add(lockoutDuration);
+        }
+
+        BumpVersion();
+    }
+
+    /// <summary>
+    /// Records a successful authentication: the failure counter is reset and any active lockout
+    /// is lifted. Called only after the password was verified and the account state allows
+    /// authentication.
+    /// </summary>
+    /// <param name="utcNow">The current instant, in UTC.</param>
+    public void RecordSuccessfulLogin(DateTime utcNow)
+    {
+        FailedAccessCount = 0;
+        LockoutUntilUtc = null;
+        BumpVersion();
+    }
+
+    /// <summary>
+    /// Records a password change: the timestamp is stored and the authentication throttle is
+    /// reset, because the new credential invalidates the failure history that preceded it.
+    /// Session invalidation (revoking outstanding refresh tokens) is orchestrated by the
+    /// password-change use case, not by this aggregate.
+    /// </summary>
+    /// <param name="utcNow">The current instant, in UTC.</param>
+    public void MarkPasswordChanged(DateTime utcNow)
+    {
+        LastPasswordChangedAtUtc = utcNow;
+        FailedAccessCount = 0;
+        LockoutUntilUtc = null;
         BumpVersion();
     }
 

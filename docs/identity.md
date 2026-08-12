@@ -2,8 +2,10 @@
 
 The Identity module (`src/Modules/Identity/LastHour.Modules.Identity`) owns the user
 account model of the LastHour platform. This document describes the foundation
-established in Sprint 01. Authentication behavior — hashing, sign-in, tokens,
-verification, lockout — is **not implemented** and is called out as such below.
+established in Sprint 01 plus the credential foundation added in Sprint 02.
+Sign-in, tokens and verification workflows are implemented as described below;
+features still missing are called out as such. Password hashing/verification is
+implemented — see docs/authentication.md.
 
 ## User aggregate
 
@@ -78,8 +80,9 @@ additive migration with its own normalization decision.
 - `Disabled`: permanently deactivated.
 
 Temporary, time-boxed lockout (failed sign-in throttling) is **not** part of the
-status model — it is authentication behavior for a future sprint, kept separate
-from permanent account state by design.
+status model — it is authentication behavior tracked on the aggregate
+(`FailedAccessCount`/`LockoutUntilUtc`, Sprint 06, docs/account-security.md),
+kept separate from permanent account state by design.
 
 ## Password abstraction
 
@@ -87,18 +90,21 @@ from permanent account state by design.
 wraps the final hash representation only. The aggregate never sees plaintext
 passwords or confirmation values.
 
-**Password hashing is NOT implemented in this sprint.** A future authentication
-sprint introduces the hashing scheme (Argon2id/bcrypt/PBKDF2 choice is an
-upcoming decision) and constructs `PasswordCredential.FromHash(...)`. The column
+**Password hashing IS implemented** (Sprint 02): the Argon2id provider lives in
+`LastHour.BuildingBlocks.Infrastructure` behind the `IPasswordHasher` contract,
+and the module's `PasswordCredentialService` (docs/authentication.md) constructs
+`PasswordCredential.FromHash(...)` — the aggregate API is unchanged. The column
 (`PasswordHash`, varchar(512)) has headroom for any modern scheme and is never
 exposed through API responses or logs.
 
 ## Security state
 
-No `SecurityStamp`, lockout counters, or token state exist yet — those belong to
-the authentication/authorization sprints and will be additive migrations. The
-only security-adjacent state today is the credential hash and the concurrency
-token.
+The aggregate carries the credential hash, the optimistic-concurrency `Version`
+token, and (Sprint 06, additive migration `20260812014158_AddAccountSecurity`)
+the authentication throttle: `FailedAccessCount`, `LockoutUntilUtc` and
+`LastPasswordChangedAtUtc`. No `SecurityStamp` exists — session revocation is
+explicit (Sprint 05/06), so a stamp is unnecessary. None of this state is ever
+exposed through API responses or logs.
 
 ## Persistence
 
@@ -124,8 +130,9 @@ token.
 `IUserRepository : IRepository<User>` (`Domain/Users/IUserRepository.cs`) adds the
 identity-specific lookups: `GetByEmailAsync(Email)` and `ExistsByEmailAsync(Email)`.
 The contract takes `Email` so queries can only run against the normalized value.
-No implementation exists yet — the first command handler sprint provides it
-(against `IReadRepository`/the generic repository pattern).
+Implemented by `UserRepository` (module Application, Sprint 03), composed purely
+from the generic `IRepository<User>` / `IReadRepository<User, UserId>`
+implementations — the module needs no Infrastructure reference.
 
 ## Migration
 
@@ -142,14 +149,18 @@ dotnet dotnet-ef migrations add <Name> \
 
 ## Not implemented (future sprints)
 
-- Registration and sign-in (no endpoints exist; the aggregate stays internal).
-- Password hashing/verification.
-- JWT access tokens and refresh tokens.
-- Email verification workflow.
+- Registration: **implemented** (Sprint 03, docs/registration.md).
+- Login and JWT access tokens: **implemented** (Sprint 04, docs/login-jwt.md).
+- Refresh tokens, token rotation, logout, revocation: **implemented** (Sprint 05, docs/refresh-tokens.md).
+  The `refresh_tokens` table (migration `20260812010634_AddRefreshTokens`) stores only token
+  hashes, with family-based rotation and a partial unique index enforcing one active token per
+  session.
+- Email verification workflow / account activation (accounts are created
+  `Pending` and cannot authenticate until an activation path exists).
 - Password reset.
 - MFA / OAuth / external providers.
 - Roles, permissions, authorization policies.
-- Account lockout and security stamps.
+- Security-stamp-based token invalidation (session revocation is explicit, Sprint 05/06).
 - Admin user-management endpoints.
 
 ## Security considerations
@@ -167,7 +178,9 @@ dotnet dotnet-ef migrations add <Name> \
 
 - `IUserRepository` gives handlers the normalized-email lookup for sign-in.
 - `AccountStatus` gates authentication: only `Active` accounts authenticate.
-- `PasswordCredential` accepts the future hashing scheme's output unchanged.
+- `PasswordCredential` accepts the Argon2id hasher's PHC output unchanged
+  (docs/authentication.md); verification and rehash detection happen through
+  `IPasswordHasher`, never inside the aggregate.
 - `Version` protects concurrent updates (e.g. simultaneous profile and password
   changes) once write flows exist.
 - `IAuditableEntity` records who created/modified accounts once `ICurrentUser`

@@ -60,6 +60,15 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(user => user.Version)
             .IsConcurrencyToken();
 
+        // The authentication throttle: consecutive failed attempts and the lockout window they
+        // trigger. Lockout is time-boxed authentication state, deliberately separate from the
+        // account lifecycle status column.
+        builder.Property(user => user.FailedAccessCount)
+            .HasDefaultValue(0)
+            .IsRequired();
+        builder.Property(user => user.LockoutUntilUtc);
+        builder.Property(user => user.LastPasswordChangedAtUtc);
+
         builder.Property(user => user.CreatedAt).IsRequired();
         builder.Property(user => user.CreatedBy).HasMaxLength(64);
         builder.Property(user => user.UpdatedBy).HasMaxLength(64);

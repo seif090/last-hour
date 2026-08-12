@@ -3,8 +3,8 @@ namespace LastHour.Modules.Identity.Domain.Users;
 /// <summary>
 /// The lifecycle status of a <see cref="User"/> account. This models permanent or
 /// semi-permanent account state only; temporary, time-boxed lockout (failed sign-in
-/// throttling) is authentication behavior and deliberately not part of this model — it
-/// belongs to a future authentication sprint.
+/// throttling) is authentication behavior tracked separately on the aggregate
+/// (<c>FailedAccessCount</c>/<c>LockoutUntilUtc</c>), not as a lifecycle status.
 /// </summary>
 public enum AccountStatus
 {
