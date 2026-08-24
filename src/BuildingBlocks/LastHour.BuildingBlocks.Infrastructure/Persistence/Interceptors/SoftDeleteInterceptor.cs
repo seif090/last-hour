@@ -62,6 +62,14 @@ public sealed class SoftDeleteInterceptor : SaveChangesInterceptor
             softDelete.IsDeleted = true;
             softDelete.DeletedAt = _clock.UtcNow;
             softDelete.DeletedBy = _currentUser.UserId;
+
+            foreach (ReferenceEntry reference in entry.References)
+            {
+                if (reference.TargetEntry is not null && reference.TargetEntry.Metadata.IsOwned())
+                {
+                    reference.TargetEntry.State = EntityState.Unchanged;
+                }
+            }
         }
     }
 }

@@ -33,6 +33,21 @@ public sealed class EfTrackedRepository<TEntity, TId> : ITrackedRepository<TEnti
         => _dbSet.SingleOrDefaultAsync(entity => entity.Id.Equals(id), cancellationToken);
 
     /// <inheritdoc/>
+    public Task<TEntity?> GetByIdIncludingAsync(
+        TId id,
+        IReadOnlyCollection<string> includePaths,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<TEntity> query = _dbSet.AsQueryable();
+        foreach (string includePath in includePaths)
+        {
+            query = query.Include(includePath);
+        }
+
+        return query.SingleOrDefaultAsync(entity => entity.Id.Equals(id), cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public Task ReloadAsync(TEntity entity, CancellationToken cancellationToken = default)
         => _dbSet.Entry(entity).ReloadAsync(cancellationToken);
 }

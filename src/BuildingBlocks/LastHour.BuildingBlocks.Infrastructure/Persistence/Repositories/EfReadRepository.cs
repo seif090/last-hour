@@ -58,4 +58,22 @@ public sealed class EfReadRepository<TEntity, TId> : IReadRepository<TEntity, TI
     /// <inheritdoc/>
     public Task<int> CountAsync(CancellationToken cancellationToken = default)
         => _dbSet.AsNoTracking().CountAsync(cancellationToken);
+
+    /// <inheritdoc/>
+    public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        => _dbSet.AsNoTracking().CountAsync(predicate, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<TEntity>> ListAsync<TKey>(
+        Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, TKey>> sortSelector,
+        bool sortDescending,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<TEntity> query = _dbSet.AsNoTracking().Where(predicate);
+        query = sortDescending ? query.OrderByDescending(sortSelector) : query.OrderBy(sortSelector);
+        return await query.Skip(skip).Take(take).ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
 }

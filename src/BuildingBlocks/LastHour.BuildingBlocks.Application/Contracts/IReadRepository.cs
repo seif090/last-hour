@@ -73,4 +73,46 @@ public interface IReadRepository<TEntity, TId>
     /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
     /// <returns>The number of entities.</returns>
     Task<int> CountAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Counts the number of entities matching <paramref name="predicate"/>.
+    /// </summary>
+    /// <param name="predicate">The condition an entity must satisfy.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>The number of matching entities.</returns>
+    async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        // In-memory fallback used by implementations that cannot apply predicates in the store.
+        IReadOnlyList<TEntity> all = await ListAsync(predicate, cancellationToken).ConfigureAwait(false);
+        return all.Count;
+    }
+
+    /// <summary>
+    /// Retrieves an ordered page of the entities matching <paramref name="predicate"/>.
+    /// Implementations translate the ordering and paging into the store where possible; the
+    /// default applies them in memory over <see cref="ListAsync(System.Linq.Expressions.Expression{Func{TEntity, bool}}, System.Threading.CancellationToken)"/>.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the sort key.</typeparam>
+    /// <param name="predicate">The condition an entity must satisfy.</param>
+    /// <param name="sortSelector">The sort key of an entity.</param>
+    /// <param name="sortDescending">When <see langword="true"/>, order descending; otherwise ascending.</param>
+    /// <param name="skip">The number of leading matches to skip.</param>
+    /// <param name="take">The maximum number of matches to return.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>A read-only list of the matching, ordered page.</returns>
+    async Task<IReadOnlyList<TEntity>> ListAsync<TKey>(
+        Expression<Func<TEntity, bool>> predicate,
+        Expression<Func<TEntity, TKey>> sortSelector,
+        bool sortDescending,
+        int skip,
+        int take,
+        CancellationToken cancellationToken = default)
+    {
+        // In-memory fallback used by implementations that cannot apply ordering in the store.
+        IReadOnlyList<TEntity> all = await ListAsync(predicate, cancellationToken).ConfigureAwait(false);
+        IOrderedEnumerable<TEntity> ordered = sortDescending
+            ? all.OrderByDescending(sortSelector.Compile())
+            : all.OrderBy(sortSelector.Compile());
+        return ordered.Skip(skip).Take(take).ToArray();
+    }
 }
