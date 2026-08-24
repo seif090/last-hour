@@ -4,6 +4,7 @@ using LastHour.Modules.Identity.Application.Commands;
 using LastHour.Modules.Identity.Application.Persistence;
 using LastHour.Modules.Identity.Application.RefreshTokens;
 using LastHour.Modules.Identity.Domain.RefreshTokens;
+using LastHour.Modules.Identity.Domain.Roles;
 using LastHour.Modules.Identity.Domain.Users;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,7 +52,9 @@ public static class IdentityServiceCollectionExtensions
         services.AddSingleton<IValidateOptions<AccountSecurityOptions>, AccountSecurityOptionsValidator>();
 
         services.AddScoped<IPasswordCredentialService, PasswordCredentialService>();
+        services.AddScoped<IAuthorizationBootstrapService, AuthorizationBootstrapService>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 

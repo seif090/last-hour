@@ -1,5 +1,7 @@
+using LastHour.BuildingBlocks.Contracts.Events;
 using LastHour.BuildingBlocks.SharedKernel.Domain;
 using LastHour.BuildingBlocks.SharedKernel.Domain.Exceptions;
+using LastHour.Modules.Identity.Domain.Roles;
 
 namespace LastHour.Modules.Identity.Domain.Users;
 
@@ -14,6 +16,8 @@ namespace LastHour.Modules.Identity.Domain.Users;
 /// </summary>
 public sealed class User : AggregateRoot<UserId>, IAuditableEntity
 {
+    private readonly List<UserRole> _userRoles = new List<UserRole>();
+
     private User()
     {
         // EF Core materialization only.
@@ -75,6 +79,14 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     /// </summary>
     public DateTime? LastPasswordChangedAtUtc { get; private set; }
 
+    /// <summary>
+    /// Gets the roles assigned to this account, as read-only association records. Assignment
+    /// is a set membership owned by this aggregate: a role can be added only through
+    /// <see cref="AssignRole"/> and removed only through <see cref="RemoveRole"/>, and the
+    /// database composite key additionally prevents duplicate assignments.
+    /// </summary>
+    public IReadOnlyCollection<UserRole> UserRoles => _userRoles;
+
     /// <inheritdoc/>
     public DateTime CreatedAt { get; set; }
 
@@ -88,8 +100,8 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     public string? UpdatedBy { get; set; }
 
     /// <summary>
-    /// Creates a new user account in the <see cref="AccountStatus.Pending"/> state. The
-    /// pending state is chosen because an account must not be usable before its identity is
+    /// Creates a new user account in the <see cref="AccountStatus.Pending"/> state and raises <see cref="UserRegisteredDomainEvent"/>.
+    /// The pending state is chosen because an account must not be usable before its identity is
     /// established (for example, the address has been verified); the activation flow is a
     /// future sprint concern.
     /// </summary>
@@ -101,7 +113,9 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     public static User Create(Email email, PasswordCredential? passwordCredential = null)
     {
         ArgumentNullException.ThrowIfNull(email);
-        return new User(UserId.New(), email, AccountStatus.Pending, passwordCredential);
+        var user = new User(UserId.New(), email, AccountStatus.Pending, passwordCredential);
+        user.RaiseDomainEvent(new UserRegisteredDomainEvent(user.Id.Value, user.Email.Value));
+        return user;
     }
 
     /// <summary>
@@ -185,6 +199,51 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     }
 
     /// <summary>
+    /// Assigns a role to the account. Assigning the same role twice is rejected so a role is
+    /// a set membership, never a count. The change bumps the optimistic concurrency token, so
+    /// concurrent assignment attempts surface as a conflict instead of silently duplicating.
+    /// </summary>
+    /// <param name="roleId">The role to assign.</param>
+    /// <exception cref="BusinessRuleValidationException">The role is already assigned.</exception>
+    public void AssignRole(RoleId roleId)
+    {
+        if (HasRole(roleId))
+        {
+            throw new BusinessRuleValidationException(
+                new UserRoleAssignmentRule($"The user already holds role '{roleId}'."));
+        }
+
+        _userRoles.Add(UserRole.Create(Id, roleId));
+        BumpVersion();
+    }
+
+    /// <summary>
+    /// Removes a role from the account.
+    /// </summary>
+    /// <param name="roleId">The role to remove.</param>
+    /// <exception cref="BusinessRuleValidationException">The user does not hold the role.</exception>
+    public void RemoveRole(RoleId roleId)
+    {
+        UserRole? assignment = _userRoles.FirstOrDefault(assignment => assignment.RoleId == roleId);
+        if (assignment is null)
+        {
+            throw new BusinessRuleValidationException(
+                new UserRoleAssignmentRule($"The user does not hold role '{roleId}'."));
+        }
+
+        _userRoles.Remove(assignment);
+        BumpVersion();
+    }
+
+    /// <summary>
+    /// Determines whether the account currently holds the specified role.
+    /// </summary>
+    /// <param name="roleId">The role to check.</param>
+    /// <returns><see langword="true"/> when the role is assigned; otherwise <see langword="false"/>.</returns>
+    public bool HasRole(RoleId roleId)
+        => _userRoles.Any(assignment => assignment.RoleId == roleId);
+
+    /// <summary>
     /// Determines whether the account is currently locked out.
     /// </summary>
     /// <param name="utcNow">The current instant, in UTC.</param>
@@ -197,7 +256,8 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     /// has already expired is treated as finished: the count starts fresh from this attempt. An
     /// active lockout is left untouched (a locked account rejects further attempts without
     /// incrementing). When the count reaches <paramref name="maxFailedAttempts"/> the account
-    /// becomes locked until <paramref name="utcNow"/> plus <paramref name="lockoutDuration"/>.
+    /// becomes locked until <paramref name="utcNow"/> plus <paramref name="lockoutDuration"/>
+    /// and raises <see cref="UserLockedOutDomainEvent"/>.
     /// </summary>
     /// <param name="utcNow">The current instant, in UTC.</param>
     /// <param name="maxFailedAttempts">The number of consecutive failures that triggers a lockout.</param>
@@ -217,10 +277,15 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
             LockoutUntilUtc = null;
         }
 
+        bool wasLockedOut = IsLockedOut(utcNow);
         FailedAccessCount++;
         if (FailedAccessCount >= maxFailedAttempts)
         {
             LockoutUntilUtc = utcNow.Add(lockoutDuration);
+            if (!wasLockedOut && IsLockedOut(utcNow))
+            {
+                RaiseDomainEvent(new UserLockedOutDomainEvent(Id.Value, LockoutUntilUtc.Value));
+            }
         }
 
         BumpVersion();
@@ -241,7 +306,8 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
 
     /// <summary>
     /// Records a password change: the timestamp is stored and the authentication throttle is
-    /// reset, because the new credential invalidates the failure history that preceded it.
+    /// reset, because the new credential invalidates the failure history that preceded it,
+    /// and raises <see cref="UserPasswordChangedDomainEvent"/>.
     /// Session invalidation (revoking outstanding refresh tokens) is orchestrated by the
     /// password-change use case, not by this aggregate.
     /// </summary>
@@ -252,6 +318,7 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
         FailedAccessCount = 0;
         LockoutUntilUtc = null;
         BumpVersion();
+        RaiseDomainEvent(new UserPasswordChangedDomainEvent(Id.Value));
     }
 
     private static bool CanTransition(AccountStatus from, AccountStatus to) => (from, to) switch
@@ -290,6 +357,18 @@ public sealed class User : AggregateRoot<UserId>, IAuditableEntity
     private sealed class UserEmailChangeRule : IBusinessRule
     {
         public UserEmailChangeRule(string message)
+        {
+            Message = message;
+        }
+
+        public bool IsSatisfied => false;
+
+        public string Message { get; }
+    }
+
+    private sealed class UserRoleAssignmentRule : IBusinessRule
+    {
+        public UserRoleAssignmentRule(string message)
         {
             Message = message;
         }

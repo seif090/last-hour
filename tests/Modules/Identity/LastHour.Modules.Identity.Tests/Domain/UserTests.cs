@@ -1,6 +1,11 @@
+using System.Text.Json;
 using FluentAssertions;
+using LastHour.BuildingBlocks.Contracts.Events;
+using LastHour.BuildingBlocks.Infrastructure.Persistence.Outbox;
+using LastHour.BuildingBlocks.SharedKernel.Domain.Events;
 using LastHour.BuildingBlocks.SharedKernel.Domain.Exceptions;
 using LastHour.Modules.Identity.Application;
+using LastHour.Modules.Identity.Domain.Roles;
 using LastHour.Modules.Identity.Domain.Users;
 
 namespace LastHour.Modules.Identity.Tests.Domain;
@@ -319,6 +324,243 @@ public class UserTests
         user.FailedAccessCount.Should().Be(0);
         user.LockoutUntilUtc.Should().BeNull();
         user.LastPasswordChangedAtUtc.Should().BeNull();
+    }
+
+    [Fact]
+    public void NewUser_HasNoRoles()
+    {
+        User user = User.Create(DefaultEmail);
+
+        user.UserRoles.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AssignRole_AddsRoleAndBumpsVersion()
+    {
+        User user = CreateActiveUser();
+        RoleId roleId = RoleId.New();
+        long versionBefore = user.Version;
+
+        user.AssignRole(roleId);
+
+        user.HasRole(roleId).Should().BeTrue();
+        user.UserRoles.Should().ContainSingle(assignment => assignment.RoleId == roleId);
+        user.UserRoles.Single().UserId.Should().Be(user.Id);
+        user.Version.Should().BeGreaterThan(versionBefore);
+    }
+
+    [Fact]
+    public void AssignRole_SameRoleTwice_Throws()
+    {
+        User user = CreateActiveUser();
+        RoleId roleId = RoleId.New();
+        user.AssignRole(roleId);
+
+        Action act = () => user.AssignRole(roleId);
+
+        act.Should().Throw<BusinessRuleValidationException>();
+        user.UserRoles.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void AssignRole_MultipleRoles_AllHeld()
+    {
+        User user = CreateActiveUser();
+        RoleId first = RoleId.New();
+        RoleId second = RoleId.New();
+
+        user.AssignRole(first);
+        user.AssignRole(second);
+
+        user.HasRole(first).Should().BeTrue();
+        user.HasRole(second).Should().BeTrue();
+        user.UserRoles.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void RemoveRole_RemovesOnlyTheTargetRole()
+    {
+        User user = CreateActiveUser();
+        RoleId keep = RoleId.New();
+        RoleId remove = RoleId.New();
+        user.AssignRole(keep);
+        user.AssignRole(remove);
+
+        user.RemoveRole(remove);
+
+        user.HasRole(remove).Should().BeFalse();
+        user.HasRole(keep).Should().BeTrue();
+        user.UserRoles.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void RemoveRole_NotAssigned_Throws()
+    {
+        User user = CreateActiveUser();
+
+        Action act = () => user.RemoveRole(RoleId.New());
+
+        act.Should().Throw<BusinessRuleValidationException>();
+    }
+
+    [Fact]
+    public void Create_Raises_UserRegisteredDomainEvent()
+    {
+        User user = User.Create(DefaultEmail);
+
+        IReadOnlyCollection<IDomainEvent> domainEvents = user.GetDomainEvents();
+        domainEvents.Should().ContainSingle();
+
+        var registeredEvent = domainEvents.Single().Should().BeOfType<UserRegisteredDomainEvent>().Subject;
+        registeredEvent.EventId.Should().NotBeEmpty();
+        registeredEvent.OccurredOn.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        registeredEvent.UserId.Should().Be(user.Id.Value);
+        registeredEvent.Email.Should().Be(DefaultEmail.Value);
+    }
+
+    [Fact]
+    public void MarkPasswordChanged_Raises_UserPasswordChangedDomainEvent()
+    {
+        User user = CreateActiveUser();
+        user.ClearDomainEvents();
+
+        DateTime changedAt = DateTime.UtcNow;
+        user.MarkPasswordChanged(changedAt);
+
+        IReadOnlyCollection<IDomainEvent> domainEvents = user.GetDomainEvents();
+        domainEvents.Should().ContainSingle();
+
+        var passwordChangedEvent = domainEvents.Single().Should().BeOfType<UserPasswordChangedDomainEvent>().Subject;
+        passwordChangedEvent.EventId.Should().NotBeEmpty();
+        passwordChangedEvent.OccurredOn.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        passwordChangedEvent.UserId.Should().Be(user.Id.Value);
+    }
+
+    [Fact]
+    public void RecordFailedLogin_BelowThreshold_RaisesNoEvent()
+    {
+        User user = CreateActiveUser();
+        user.ClearDomainEvents();
+
+        user.RecordFailedLogin(Now, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+
+        user.GetDomainEvents().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RecordFailedLogin_ReachingThreshold_Raises_UserLockedOutDomainEvent()
+    {
+        User user = CreateActiveUser();
+        user.ClearDomainEvents();
+
+        for (int attempt = 0; attempt < DefaultOptions.MaxFailedAttempts; attempt++)
+        {
+            user.RecordFailedLogin(Now, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+        }
+
+        IReadOnlyCollection<IDomainEvent> domainEvents = user.GetDomainEvents();
+        domainEvents.Should().ContainSingle();
+
+        var lockedOutEvent = domainEvents.Single().Should().BeOfType<UserLockedOutDomainEvent>().Subject;
+        lockedOutEvent.EventId.Should().NotBeEmpty();
+        lockedOutEvent.OccurredOn.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        lockedOutEvent.UserId.Should().Be(user.Id.Value);
+        lockedOutEvent.LockoutUntilUtc.Should().Be(Now.Add(DefaultOptions.LockoutDuration));
+    }
+
+    [Fact]
+    public void RecordFailedLogin_WhileAlreadyLocked_RaisesNoAdditionalLockoutEvent()
+    {
+        User user = CreateActiveUser();
+        user.ClearDomainEvents();
+
+        for (int attempt = 0; attempt < DefaultOptions.MaxFailedAttempts; attempt++)
+        {
+            user.RecordFailedLogin(Now, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+        }
+
+        user.GetDomainEvents().Should().ContainSingle();
+        user.ClearDomainEvents();
+
+        // Additional failed attempt within the active lockout window
+        user.RecordFailedLogin(Now.AddMinutes(1), DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+
+        user.GetDomainEvents().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void RecordFailedLogin_AfterExpiredLockout_ReachingThresholdAgain_Raises_UserLockedOutDomainEvent()
+    {
+        User user = CreateActiveUser();
+        user.ClearDomainEvents();
+
+        for (int attempt = 0; attempt < DefaultOptions.MaxFailedAttempts; attempt++)
+        {
+            user.RecordFailedLogin(Now, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+        }
+
+        user.GetDomainEvents().Should().ContainSingle();
+        user.ClearDomainEvents();
+
+        DateTime newWindow = Now.Add(DefaultOptions.LockoutDuration).AddMinutes(1);
+
+        // Attempts 1 to 4 in new window -> no event
+        for (int attempt = 0; attempt < DefaultOptions.MaxFailedAttempts - 1; attempt++)
+        {
+            user.RecordFailedLogin(newWindow, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+        }
+        user.GetDomainEvents().Should().BeEmpty();
+
+        // Final attempt reaching threshold again -> raises new lockout event
+        user.RecordFailedLogin(newWindow, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+        user.GetDomainEvents().Should().ContainSingle();
+        var reLockedEvent = user.GetDomainEvents().Single().Should().BeOfType<UserLockedOutDomainEvent>().Subject;
+        reLockedEvent.UserId.Should().Be(user.Id.Value);
+        reLockedEvent.LockoutUntilUtc.Should().Be(newWindow.Add(DefaultOptions.LockoutDuration));
+    }
+
+    [Fact]
+    public void DomainEvents_SerializeAndDeserializeThroughOutbox_PreservesEventIdentityAndPayload()
+    {
+        User user = User.Create(DefaultEmail, PasswordCredential.FromHash("hash-value"));
+        user.MarkPasswordChanged(Now);
+        for (int attempt = 0; attempt < DefaultOptions.MaxFailedAttempts; attempt++)
+        {
+            user.RecordFailedLogin(Now, DefaultOptions.MaxFailedAttempts, DefaultOptions.LockoutDuration);
+        }
+
+        IReadOnlyCollection<IDomainEvent> domainEvents = user.GetDomainEvents();
+        domainEvents.Should().HaveCount(3);
+
+        var registeredEvent = domainEvents.OfType<UserRegisteredDomainEvent>().Single();
+        var passwordChangedEvent = domainEvents.OfType<UserPasswordChangedDomainEvent>().Single();
+        var lockedOutEvent = domainEvents.OfType<UserLockedOutDomainEvent>().Single();
+
+        // Verify UserRegistered serialization
+        string registeredJson = JsonSerializer.Serialize(registeredEvent, OutboxJson.SerializerOptions);
+        var rehydratedRegistered = JsonSerializer.Deserialize<UserRegisteredDomainEvent>(registeredJson, OutboxJson.SerializerOptions);
+        rehydratedRegistered.Should().NotBeNull();
+        rehydratedRegistered!.EventId.Should().Be(registeredEvent.EventId);
+        rehydratedRegistered.OccurredOn.Should().Be(registeredEvent.OccurredOn);
+        rehydratedRegistered.UserId.Should().Be(user.Id.Value);
+        rehydratedRegistered.Email.Should().Be(DefaultEmail.Value);
+
+        // Verify UserPasswordChanged serialization
+        string passwordChangedJson = JsonSerializer.Serialize(passwordChangedEvent, OutboxJson.SerializerOptions);
+        var rehydratedPasswordChanged = JsonSerializer.Deserialize<UserPasswordChangedDomainEvent>(passwordChangedJson, OutboxJson.SerializerOptions);
+        rehydratedPasswordChanged.Should().NotBeNull();
+        rehydratedPasswordChanged!.EventId.Should().Be(passwordChangedEvent.EventId);
+        rehydratedPasswordChanged.OccurredOn.Should().Be(passwordChangedEvent.OccurredOn);
+        rehydratedPasswordChanged.UserId.Should().Be(user.Id.Value);
+
+        // Verify UserLockedOut serialization
+        string lockedOutJson = JsonSerializer.Serialize(lockedOutEvent, OutboxJson.SerializerOptions);
+        var rehydratedLockedOut = JsonSerializer.Deserialize<UserLockedOutDomainEvent>(lockedOutJson, OutboxJson.SerializerOptions);
+        rehydratedLockedOut.Should().NotBeNull();
+        rehydratedLockedOut!.EventId.Should().Be(lockedOutEvent.EventId);
+        rehydratedLockedOut.OccurredOn.Should().Be(lockedOutEvent.OccurredOn);
+        rehydratedLockedOut.UserId.Should().Be(user.Id.Value);
+        rehydratedLockedOut.LockoutUntilUtc.Should().Be(Now.Add(DefaultOptions.LockoutDuration));
     }
 
     private static User CreateActiveUser()

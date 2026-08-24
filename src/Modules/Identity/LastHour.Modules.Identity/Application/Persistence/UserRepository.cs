@@ -67,7 +67,14 @@ public sealed class UserRepository : IUserRepository
 
     /// <inheritdoc/>
     public Task<User?> GetByIdTrackedAsync(UserId id, CancellationToken cancellationToken = default)
-        => _trackedRepository.GetByIdAsync(id, cancellationToken);
+    {
+        // Eagerly load the role assignments: flows that remove a role must see the owned
+        // collection, because the persistence context never lazy-loads it.
+        return _trackedRepository.GetByIdIncludingAsync(
+            id,
+            new[] { nameof(User.UserRoles) },
+            cancellationToken);
+    }
 
     /// <inheritdoc/>
     public Task ReloadTrackedAsync(User user, CancellationToken cancellationToken = default)
