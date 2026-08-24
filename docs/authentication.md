@@ -199,7 +199,9 @@ parameters are never exposed through API responses.
 - Password reset.
 - MFA / OAuth / external providers.
 - Security-stamp-based token invalidation (session revocation is explicit, Sprint 06).
-- Roles, permissions, authorization policies.
+- Roles and permissions **foundation**: implemented (Sprint 07, docs/roles-permissions.md).
+- Authorization and policy **enforcement**: implemented (Sprint 08, docs/authorization.md) —
+  permission-protected endpoints, live permission resolution, consistent 401/403 handling.
 - Brute-force-specific rate-limit policies (the global and per-IP limits from
   Sprint 0.4 already apply; endpoint-specific policies are future work).
 

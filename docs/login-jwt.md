@@ -62,7 +62,10 @@ verification endpoint, not a profile feature.
 | `iss` / `aud` | configured issuer / audience | enforced by validation |
 
   Deliberately **not** in the token: email (personally identifying data),
-  password material, hashes, security state, roles and permissions.
+  password material, hashes, security state, roles and permissions. The
+  roles/permissions foundation (Sprint 07, docs/roles-permissions.md) resolves the
+  **live** effective permission set per request instead, so role changes take effect
+  immediately and tokens never carry stale authorization state.
 
 ## Configuration
 

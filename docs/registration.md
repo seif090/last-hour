@@ -129,5 +129,8 @@ deferral: the login sprint's `GetByEmailAsync` lookup now has a working implemen
 - Email verification workflow and email sending.
 - Password reset.
 - MFA / OAuth / external providers.
-- Roles, permissions, authorization policies.
+- Roles and permissions **foundation**: implemented (Sprint 07, docs/roles-permissions.md);
+  authorization policies and enforcement not yet. Registration deliberately assigns no
+  default role — the business requirements do not define one, and public registration must
+  never grant privileges.
 - CAPTCHA or registration-specific rate-limit policies.

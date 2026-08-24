@@ -159,7 +159,10 @@ dotnet dotnet-ef migrations add <Name> \
   `Pending` and cannot authenticate until an activation path exists).
 - Password reset.
 - MFA / OAuth / external providers.
-- Roles, permissions, authorization policies.
+- Roles and permissions **foundation**: implemented (Sprint 07, docs/roles-permissions.md) —
+  the `Role`, `Permission`, `UserRole` and `RolePermission` model with catalog seeding; the
+  management use cases are application-ready but intentionally not exposed as endpoints yet
+  (no enforcement layer until Sprint 08), and authorization policies remain future work.
 - Security-stamp-based token invalidation (session revocation is explicit, Sprint 05/06).
 - Admin user-management endpoints.
 

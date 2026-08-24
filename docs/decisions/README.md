@@ -24,3 +24,16 @@ short and linked from the code it describes where practical.
 | [ADR-015](ADR-015-jwt-access-tokens.md) | JWT access tokens for authentication |
 | [ADR-016](ADR-016-refresh-token-rotation.md) | Refresh-token rotation with family-based reuse detection |
 | [ADR-017](ADR-017-account-lockout-password-change.md) | Failed-attempt lockout and password-change session revocation |
+| [ADR-018](ADR-018-roles-permissions-model.md) | Roles & permissions model with catalog-driven permissions and per-request resolution |
+| [ADR-019](ADR-019-authorization-enforcement.md) | Permission-based authorization enforcement with live resolution and consistent 403 responses |
+| [ADR-020](ADR-020-consumer-idempotency-standard.md) | Standardized domain event consumer pattern & dual-layer idempotency |
+| [ADR-021](ADR-021-production-event-observability.md) | Production event observability, failure classification & operational diagnostics |
+| [ADR-022](ADR-022-identity-domain-events.md) | Identity domain events foundation & security boundaries |
+| [ADR-023](ADR-023-identity-password-changed-notification.md) | Identity password-changed notification consumer & security idempotency |
+| [ADR-024](ADR-024-identity-lockout-notification.md) | Identity account-lockout notification consumer & security idempotency |
+| [ADR-025](ADR-025-identity-user-registered-notification.md) | Identity user-registered welcome notification consumer & privacy boundaries |
+| [ADR-026](ADR-026-event-processing-hardening.md) | Event processing reliability model, poison event protection & architectural hardening |
+| [ADR-027](ADR-027-notification-lifecycle-and-read-state.md) | Notification lifecycle, read-state invariants, and query operations |
+| [ADR-028](ADR-028-notification-delivery-architecture.md) | Multi-channel external notification delivery architecture |
+| [ADR-029](ADR-029-notification-preferences-and-templates.md) | Notification preferences, templates, and policy resolution subsystem |
+| [ADR-030](ADR-030-notification-operations-and-retention.md) | Notification operations, administrative requeue, and data retention policy |
