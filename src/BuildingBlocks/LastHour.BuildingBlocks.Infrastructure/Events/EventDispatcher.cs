@@ -1,4 +1,5 @@
 using LastHour.BuildingBlocks.Application.Contracts;
+using LastHour.BuildingBlocks.Application.Events;
 using LastHour.BuildingBlocks.SharedKernel.Domain.Events;
 using MediatR;
 

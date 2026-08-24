@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace LastHour.BuildingBlocks.Infrastructure.Tests.Events;
 
+[Collection("Events")]
 public class EventDispatcherTests
 {
     [Fact]

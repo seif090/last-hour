@@ -1,6 +1,6 @@
 using LastHour.BuildingBlocks.SharedKernel.Domain.Events;
 
-namespace LastHour.BuildingBlocks.Infrastructure.Events;
+namespace LastHour.BuildingBlocks.Application.Events;
 
 /// <summary>
 /// Factory methods for <see cref="NotificationMessage{TMessage}"/>.

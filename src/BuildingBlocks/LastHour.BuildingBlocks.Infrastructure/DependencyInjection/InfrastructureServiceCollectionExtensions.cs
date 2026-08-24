@@ -2,8 +2,10 @@ using System.Reflection;
 using LastHour.BuildingBlocks.Application.Contracts;
 using LastHour.BuildingBlocks.Infrastructure.Events;
 using LastHour.BuildingBlocks.Infrastructure.HealthChecks;
+using LastHour.BuildingBlocks.Infrastructure.Observability.Diagnostics;
 using LastHour.BuildingBlocks.Infrastructure.Persistence;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Configuration;
+using LastHour.BuildingBlocks.Infrastructure.Persistence.Idempotency;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Interceptors;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Outbox;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Repositories;
@@ -38,6 +40,8 @@ public static class InfrastructureServiceCollectionExtensions
     private static readonly string[] RedisHealthCheckTags = { "redis", "ready" };
 
     private static readonly string[] SelfHealthCheckTags = { "self", "live" };
+
+    private static readonly string[] OutboxHealthCheckTags = { "outbox", "ready" };
 
     /// <summary>
     /// Registers the infrastructure layer with the dependency injection container.
@@ -85,6 +89,11 @@ public static class InfrastructureServiceCollectionExtensions
             .Bind(configuration.GetSection(OutboxOptions.SectionName))
             .ValidateOnStart();
         services.AddSingleton<IValidateOptions<OutboxOptions>, OutboxOptionsValidator>();
+
+        services.AddOptions<ConsumerIdempotencyOptions>()
+            .Bind(configuration.GetSection(ConsumerIdempotencyOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IValidateOptions<ConsumerIdempotencyOptions>, ConsumerIdempotencyOptionsValidator>();
 
         services.AddOptions<HealthChecksOptions>()
             .Bind(configuration.GetSection(HealthChecksOptions.SectionName))
@@ -159,6 +168,12 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IEventDispatcher, EventDispatcher>();
         services.AddScoped<IPublisher, OutboxPublisher>();
 
+        services.AddSingleton<OutboxMetrics>();
+        services.AddSingleton<IOutboxProcessorTracker, OutboxProcessorTracker>();
+        services.AddSingleton<ConsumerIdempotencyMetrics>();
+        services.AddScoped<IConsumerIdempotencyService, ConsumerIdempotencyService>();
+        services.AddScoped<IEventProcessingDiagnostics, EventProcessingDiagnostics>();
+
         services.AddHostedService<OutboxProcessor>();
         services.AddHostedService<DatabaseInitializer>();
 
@@ -166,7 +181,9 @@ public static class InfrastructureServiceCollectionExtensions
             .AddCheck<SelfHealthCheck>("self", tags: SelfHealthCheckTags)
             .AddDbContextCheck<LastHourDbContext>("postgres", tags: DatabaseHealthCheckTags)
             .AddCheck<DiskHealthCheck>("disk", tags: DiskHealthCheckTags)
-            .AddCheck<MemoryHealthCheck>("memory", tags: MemoryHealthCheckTags);
+            .AddCheck<MemoryHealthCheck>("memory", tags: MemoryHealthCheckTags)
+            .AddCheck<OutboxHealthCheck>("outbox", tags: OutboxHealthCheckTags)
+            .AddCheck<ConsumerInboxHealthCheck>("consumer_inbox", tags: OutboxHealthCheckTags);
 
         string? redisConnectionString = configuration[$"{HealthChecksOptions.SectionName}:Redis:ConnectionString"];
         if (!string.IsNullOrWhiteSpace(redisConnectionString))

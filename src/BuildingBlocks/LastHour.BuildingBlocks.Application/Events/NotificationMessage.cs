@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace LastHour.BuildingBlocks.Infrastructure.Events;
+namespace LastHour.BuildingBlocks.Application.Events;
 
 /// <summary>
 /// MediatR notification envelope used to deliver framework-agnostic messages to handlers.

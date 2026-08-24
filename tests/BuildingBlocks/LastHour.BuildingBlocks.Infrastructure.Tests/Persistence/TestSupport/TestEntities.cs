@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using LastHour.BuildingBlocks.Infrastructure.Events;
+using LastHour.BuildingBlocks.Application.Events;
 using LastHour.BuildingBlocks.SharedKernel.Domain;
 using LastHour.BuildingBlocks.SharedKernel.Domain.Events;
 using LastHour.BuildingBlocks.SharedKernel.Domain.StronglyTypedIds;
@@ -129,4 +129,48 @@ public sealed class ThrowingTestMessageNotificationHandler : INotificationHandle
 {
     public Task Handle(NotificationMessage<ThrowingTestMessage> notification, CancellationToken cancellationToken)
         => throw new InvalidOperationException("handler failed");
+}
+
+public sealed record CancellingTestMessage(string Value);
+
+public sealed class CancellingTestMessageNotificationHandler : INotificationHandler<NotificationMessage<CancellingTestMessage>>
+{
+    public static Action? OnHandling { get; set; }
+
+    public async Task Handle(NotificationMessage<CancellingTestMessage> notification, CancellationToken cancellationToken)
+    {
+        OnHandling?.Invoke();
+        await Task.Delay(Timeout.Infinite, cancellationToken);
+    }
+}
+
+public sealed record InternalCancelledTestMessage(string Value);
+
+public sealed class InternalCancelledTestMessageNotificationHandler : INotificationHandler<NotificationMessage<InternalCancelledTestMessage>>
+{
+    public Task Handle(NotificationMessage<InternalCancelledTestMessage> notification, CancellationToken cancellationToken)
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        throw new OperationCanceledException("Internal handler timeout", cts.Token);
+    }
+}
+
+public sealed class TestDomainEvent : BaseDomainEvent
+{
+    public TestDomainEvent(string data)
+    {
+        Data = data;
+    }
+
+    public string Data { get; }
+}
+
+public sealed class TestDomainEventNotificationHandler : INotificationHandler<NotificationMessage<TestDomainEvent>>
+{
+    public Task Handle(NotificationMessage<TestDomainEvent> notification, CancellationToken cancellationToken)
+    {
+        TestSink.Messages.Enqueue(notification.Message);
+        return Task.CompletedTask;
+    }
 }
