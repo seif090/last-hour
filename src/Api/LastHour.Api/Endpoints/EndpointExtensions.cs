@@ -1,4 +1,9 @@
 using LastHour.Api.Endpoints.Authentication;
+using LastHour.Api.Endpoints.Authorization;
+using LastHour.Api.Endpoints.Catalog;
+using LastHour.Api.Endpoints.Merchant;
+using LastHour.Api.Endpoints.Notifications;
+using LastHour.Api.Endpoints.Outbox;
 using LastHour.Api.Endpoints.ProblemDetails;
 using LastHour.Api.Endpoints.Registration;
 using LastHour.Api.Endpoints.System;
@@ -27,6 +32,13 @@ public static class EndpointExtensions
         app.MapProblemDetailsEndpoints();
         app.MapRegistrationEndpoints();
         app.MapAuthEndpoints();
+        app.MapAuthorizationEndpoints();
+        app.MapCategoryEndpoints();
+        app.MapProductEndpoints();
+        app.MapMerchantEndpoints();
+        app.MapNotificationEndpoints();
+        app.MapNotificationAdminEndpoints();
+        app.MapOutboxEndpoints();
         app.MapControllers();
         app.MapHealthChecks("/health").DisableRateLimiting();
         app.MapHealthChecks(

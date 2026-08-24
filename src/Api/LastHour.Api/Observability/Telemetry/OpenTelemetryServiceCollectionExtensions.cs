@@ -56,6 +56,8 @@ public static class OpenTelemetryServiceCollectionExtensions
         {
             builder = builder.WithTracing(tracing => tracing
                 .AddSource("LastHour.Api")
+                .AddSource("LastHour.Outbox")
+                .AddSource("LastHour.ConsumerIdempotency")
                 .AddSource("Microsoft.EntityFrameworkCore")
                 .AddSource("Npgsql")
                 .AddAspNetCoreInstrumentation()
@@ -78,7 +80,13 @@ public static class OpenTelemetryServiceCollectionExtensions
             builder = builder.WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
-                .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "System.Net.Http", "Npgsql"));
+                .AddMeter(
+                    "Microsoft.AspNetCore.Hosting",
+                    "Microsoft.AspNetCore.Server.Kestrel",
+                    "System.Net.Http",
+                    "Npgsql",
+                    "LastHour.Outbox",
+                    "LastHour.ConsumerIdempotency"));
 
             if (options.ConsoleExporterEnabled)
             {
