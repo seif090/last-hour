@@ -130,6 +130,12 @@ dotnet_naming_style.camel_case_style.capitalization = camel_case
 # No file header is required (kept explicit so StyleCop SA1633 stays off)
 file_header_template = unset
 
+# CA1711: 'Permission' is the domain term for an application capability — the authorization
+# model, permission catalog and documentation all speak of permissions. The reserved-suffix
+# rule (which reserves 'Permission' for System.Security.IPermission types) is therefore
+# relaxed for this suffix only, as the rule's guidance permits for unambiguous domain terms.
+dotnet_code_quality.ca1711.allowed_suffixes = Permission
+
 # StyleCop: we deliberately do not use file headers (see stylecop.json)
 dotnet_diagnostic.SA1633.severity = none
 # StyleCop: conflicts with repo conventions above (dotnet_style_qualification_* = false)

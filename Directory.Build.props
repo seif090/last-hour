@@ -13,8 +13,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-    <!-- Quality gates -->
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Quality gates: Treat warnings as errors in Release mode (CI), allow warnings in Debug (local dev) -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition="'$(Configuration)' != 'Release'">false</TreatWarningsAsErrors>
     <WarningsNotAsErrors />
     <NoWarn>$(NoWarn);CS1591;CA1014</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
