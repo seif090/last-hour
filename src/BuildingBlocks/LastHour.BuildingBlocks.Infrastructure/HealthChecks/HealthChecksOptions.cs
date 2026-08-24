@@ -46,6 +46,16 @@ public sealed class HealthChecksOptions
     /// Gets or sets the memory health check options.
     /// </summary>
     public MemoryHealthCheckOptions Memory { get; set; } = new MemoryHealthCheckOptions();
+
+    /// <summary>
+    /// Gets or sets the outbox health check options.
+    /// </summary>
+    public OutboxHealthCheckOptions Outbox { get; set; } = new OutboxHealthCheckOptions();
+
+    /// <summary>
+    /// Gets or sets the consumer inbox health check options.
+    /// </summary>
+    public ConsumerInboxHealthCheckOptions ConsumerInbox { get; set; } = new ConsumerInboxHealthCheckOptions();
 }
 
 /// <summary>
@@ -84,4 +94,71 @@ public sealed class MemoryHealthCheckOptions
     /// Gets or sets the maximum memory usage (working set), in bytes, reported as healthy.
     /// </summary>
     public long MaximumUsedBytes { get; set; } = HealthChecksOptions.DefaultMemoryMaximumUsedBytes;
+}
+
+/// <summary>
+/// Options for the outbox processor and backlog health check.
+/// </summary>
+public sealed class OutboxHealthCheckOptions
+{
+    /// <summary>
+    /// Gets or sets the pending message count threshold for degraded status.
+    /// </summary>
+    public int WarningPendingMessageCount { get; set; } = 50;
+
+    /// <summary>
+    /// Gets or sets the pending message count threshold for unhealthy status.
+    /// </summary>
+    public int CriticalPendingMessageCount { get; set; } = 500;
+
+    /// <summary>
+    /// Gets or sets the oldest pending message age threshold for degraded status.
+    /// </summary>
+    public TimeSpan WarningOldestMessageAge { get; set; } = TimeSpan.FromMinutes(6);
+
+    /// <summary>
+    /// Gets or sets the oldest pending message age threshold for unhealthy status.
+    /// </summary>
+    public TimeSpan CriticalOldestMessageAge { get; set; } = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// Gets or sets the processor heartbeat freshness threshold for unhealthy status.
+    /// </summary>
+    public TimeSpan ProcessorHeartbeatTimeout { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Gets or sets the abandoned message count threshold for degraded status.
+    /// </summary>
+    public int WarningAbandonedMessageCount { get; set; } = 10;
+
+    /// <summary>
+    /// Gets or sets the abandoned message count threshold for unhealthy status.
+    /// </summary>
+    public int CriticalAbandonedMessageCount { get; set; } = 50;
+}
+
+/// <summary>
+/// Options for the consumer inbox and lease health check.
+/// </summary>
+public sealed class ConsumerInboxHealthCheckOptions
+{
+    /// <summary>
+    /// Gets or sets the expired uncompleted lease count threshold for degraded status.
+    /// </summary>
+    public int WarningStalledLeaseCount { get; set; } = 20;
+
+    /// <summary>
+    /// Gets or sets the expired uncompleted lease count threshold for unhealthy status.
+    /// </summary>
+    public int CriticalStalledLeaseCount { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the oldest stalled lease age threshold for degraded status.
+    /// </summary>
+    public TimeSpan WarningOldestStalledAge { get; set; } = TimeSpan.FromMinutes(10);
+
+    /// <summary>
+    /// Gets or sets the oldest stalled lease age threshold for unhealthy status.
+    /// </summary>
+    public TimeSpan CriticalOldestStalledAge { get; set; } = TimeSpan.FromMinutes(30);
 }

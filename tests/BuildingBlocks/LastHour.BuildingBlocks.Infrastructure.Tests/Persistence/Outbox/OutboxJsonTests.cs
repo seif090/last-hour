@@ -31,4 +31,20 @@ public class OutboxJsonTests
         using JsonDocument document = JsonDocument.Parse(json);
         Assert.Equal(JsonValueKind.String, document.RootElement.GetProperty("aggregateId").ValueKind);
     }
+
+    [Fact]
+    public void SerializerOptions_PreservesBaseDomainEventIdentityAndTimestamp()
+    {
+        var domainEvent = new TestDomainEvent("data");
+        Guid expectedEventId = domainEvent.EventId;
+        DateTime expectedOccurredOn = domainEvent.OccurredOn;
+
+        string json = JsonSerializer.Serialize(domainEvent, OutboxJson.SerializerOptions);
+        TestDomainEvent? rehydrated = JsonSerializer.Deserialize<TestDomainEvent>(json, OutboxJson.SerializerOptions);
+
+        Assert.NotNull(rehydrated);
+        Assert.Equal(expectedEventId, rehydrated!.EventId);
+        Assert.Equal(expectedOccurredOn, rehydrated.OccurredOn);
+        Assert.Equal("data", rehydrated.Data);
+    }
 }

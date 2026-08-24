@@ -26,10 +26,18 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
         builder.Property(message => message.OccurredOnUtc)
             .IsRequired();
 
+        builder.Property(message => message.ProcessedOnUtc)
+            .IsConcurrencyToken();
+
+        builder.Property(message => message.LockExpiresAtUtc)
+            .IsConcurrencyToken();
+
+        builder.Property(message => message.NextAttemptAtUtc);
+
         builder.Property(message => message.Error)
             .HasColumnType("text");
 
-        builder.HasIndex(message => new { message.ProcessedOnUtc, message.OccurredOnUtc })
+        builder.HasIndex(message => new { message.ProcessedOnUtc, message.NextAttemptAtUtc, message.LockExpiresAtUtc, message.OccurredOnUtc })
             .HasDatabaseName("IX_outbox_messages_pending");
     }
 }

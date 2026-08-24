@@ -1,5 +1,6 @@
 using System.Reflection;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Configuration;
+using LastHour.BuildingBlocks.Infrastructure.Persistence.Idempotency;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Outbox;
 using LastHour.BuildingBlocks.Infrastructure.Persistence.Seeding;
 using Microsoft.EntityFrameworkCore;
@@ -7,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 namespace LastHour.BuildingBlocks.Infrastructure.Persistence;
 
 /// <summary>
-/// The shared database context of the LastHour backend. It owns the outbox table and applies
-/// cross-cutting concerns for every entity mapped into the model: automatic value conversion
+/// The shared database context of the LastHour backend. It owns the outbox and consumer inbox tables
+/// and applies cross-cutting concerns for every entity mapped into the model: automatic value conversion
 /// for strongly typed identifiers, soft-delete query filters, and (via the registered
 /// interceptors) audit stamps, soft deletion and outbox capture. Modules contribute entity
 /// configurations by registering their assemblies with the persistence service collection
-/// extension; nothing in the model is hard-coded here beyond the outbox.
+/// extension; nothing in the model is hard-coded here beyond the outbox and consumer inbox.
 /// </summary>
 public class LastHourDbContext : DbContext
 {
@@ -34,6 +35,11 @@ public class LastHourDbContext : DbContext
     /// </summary>
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
+    /// <summary>
+    /// Gets the consumer inbox messages tracking consumer-scoped event idempotency.
+    /// </summary>
+    public DbSet<ConsumerInboxMessage> ConsumerInboxMessages => Set<ConsumerInboxMessage>();
+
     /// <inheritdoc/>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,6 +47,7 @@ public class LastHourDbContext : DbContext
 
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new SeedHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new ConsumerInboxMessageConfiguration());
 
         foreach (Assembly assembly in _configurationAssemblies)
         {

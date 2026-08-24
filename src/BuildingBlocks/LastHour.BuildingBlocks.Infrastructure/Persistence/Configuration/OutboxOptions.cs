@@ -31,4 +31,22 @@ public sealed class OutboxOptions
     /// flagged as processed with its last error preserved.
     /// </summary>
     public int MaxRetryCount { get; set; } = 10;
+
+    /// <summary>
+    /// Gets or sets the lease duration for an exclusively claimed outbox message.
+    /// If an instance crashes or stalls, the lease expires and another instance may reclaim it.
+    /// </summary>
+    public TimeSpan LeaseDuration { get; set; } = TimeSpan.FromMinutes(1);
+
+    /// <summary>
+    /// Gets or sets the base delay used for exponential backoff on transient processing failures.
+    /// A value below one second is not supported.
+    /// </summary>
+    public TimeSpan BaseRetryDelay { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Gets or sets the maximum retry delay cap for exponential backoff.
+    /// Must be greater than or equal to <see cref="BaseRetryDelay"/>.
+    /// </summary>
+    public TimeSpan MaximumRetryDelay { get; set; } = TimeSpan.FromMinutes(5);
 }

@@ -10,24 +10,45 @@ public sealed class OutboxOptionsValidator : IValidateOptions<OutboxOptions>
     /// <inheritdoc/>
     public ValidateOptionsResult Validate(string? name, OutboxOptions options)
     {
+        var errors = new List<string>();
+
         if (options.ProcessingInterval < TimeSpan.FromSeconds(1))
         {
-            return ValidateOptionsResult.Fail(
-                $"'{OutboxOptions.SectionName}:ProcessingInterval' must be at least one second.");
+            errors.Add($"'{OutboxOptions.SectionName}:ProcessingInterval' must be at least one second.");
         }
 
         if (options.BatchSize <= 0)
         {
-            return ValidateOptionsResult.Fail(
-                $"'{OutboxOptions.SectionName}:BatchSize' must be greater than zero.");
+            errors.Add($"'{OutboxOptions.SectionName}:BatchSize' must be greater than zero.");
         }
 
-        if (options.MaxRetryCount <= 0)
+        if (options.MaxRetryCount < 0)
         {
-            return ValidateOptionsResult.Fail(
-                $"'{OutboxOptions.SectionName}:MaxRetryCount' must be greater than zero.");
+            errors.Add($"'{OutboxOptions.SectionName}:MaxRetryCount' must not be negative.");
         }
 
-        return ValidateOptionsResult.Success;
+        if (options.LeaseDuration < TimeSpan.FromSeconds(1))
+        {
+            errors.Add($"'{OutboxOptions.SectionName}:LeaseDuration' must be at least one second.");
+        }
+
+        if (options.BaseRetryDelay < TimeSpan.FromSeconds(1))
+        {
+            errors.Add($"'{OutboxOptions.SectionName}:BaseRetryDelay' must be at least one second.");
+        }
+
+        if (options.MaximumRetryDelay < TimeSpan.FromSeconds(1))
+        {
+            errors.Add($"'{OutboxOptions.SectionName}:MaximumRetryDelay' must be at least one second.");
+        }
+
+        if (options.MaximumRetryDelay < options.BaseRetryDelay)
+        {
+            errors.Add($"'{OutboxOptions.SectionName}:MaximumRetryDelay' must be greater than or equal to '{OutboxOptions.SectionName}:BaseRetryDelay'.");
+        }
+
+        return errors.Count == 0
+            ? ValidateOptionsResult.Success
+            : ValidateOptionsResult.Fail(errors);
     }
 }
